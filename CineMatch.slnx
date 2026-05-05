@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/CineMatch.API/CineMatch.API.csproj" />
+    <Project Path="src/CineMatch.Application/CineMatch.Application.csproj" />
+    <Project Path="src/CineMatch.Domain/CineMatch.Domain.csproj" />
+    <Project Path="src/CineMatch.Infrastructure/CineMatch.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>
