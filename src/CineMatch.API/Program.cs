@@ -1,6 +1,7 @@
 using CineMatch.API.Middleware;
 using CineMatch.Application;
 using CineMatch.Infrastructure;
+using Scalar.AspNetCore;
 
 namespace CineMatch.API
 {
@@ -28,6 +29,7 @@ namespace CineMatch.API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference();
             }
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseHttpsRedirection();
