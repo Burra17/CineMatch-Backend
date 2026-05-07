@@ -6,6 +6,8 @@
     <Project Path="src/CineMatch.Infrastructure/CineMatch.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="CineMatch.Tests/CineMatch.Tests.csproj" Id="5176f9b3-b3ae-40e9-a19b-2ca2c98578f2" />
+    <Project Path="CineMatch.Tests/CineMatch.Tests.csproj" Id="5176f9b3-b3ae-40e9-a19b-2ca2c98578f2">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
   </Folder>
 </Solution>
