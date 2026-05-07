@@ -1,3 +1,4 @@
+using CineMatch.Application;
 using CineMatch.Infrastructure;
 
 namespace CineMatch.API
@@ -15,6 +16,7 @@ namespace CineMatch.API
             builder.Services.AddOpenApi();
 
             builder.Services.AddInfrastructure(builder.Configuration);
+            builder.Services.AddApplication();
 
             var app = builder.Build();
 
