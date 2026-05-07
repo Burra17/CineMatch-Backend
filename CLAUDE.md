@@ -65,7 +65,7 @@ Cinematch.Domain        → (no dependencies)
 ### Entities
 
 **User**
-- Id (Guid), Username (string), Email (string), PasswordHash (string), Role (UserRole), CreatedAt (DateTime)
+- Id (Guid), Username (string), Email (string), PasswordHash (string), Role (UserRole), IsEmailConfirmed (bool), CreatedAt (DateTime), UpdatedAt (DateTime?)
 
 **WatchParty**
 - Id (Guid), JoinCode (string), HostId (Guid), Genre (string), IsActive (bool), CreatedAt (DateTime)
@@ -88,6 +88,7 @@ Cinematch.Domain        → (no dependencies)
 **UserRole**
 - `User = 0`
 - `Admin = 1`
+
 
 ### Relationships
 
@@ -263,7 +264,7 @@ Small, focused commits.
 ## Common Tasks
 
 ### Add a new entity
-1. Create the entity in `Cinematch.Domain/Entities`
+1. Create the entity in `CineMatch.Domain/Models`
 2. Configure EF Core in `Cinematch.Infrastructure/Persistence/Configurations`
 3. Add DbSet to `ApplicationDbContext`
 4. Create migration: `dotnet ef migrations add AddMyEntity --project Cinematch.Infrastructure --startup-project Cinematch.API`
