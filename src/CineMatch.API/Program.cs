@@ -1,3 +1,4 @@
+using CineMatch.API.Middleware;
 using CineMatch.Application;
 using CineMatch.Infrastructure;
 
@@ -18,14 +19,17 @@ namespace CineMatch.API
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();
 
+
             var app = builder.Build();
+
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
             }
-
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
