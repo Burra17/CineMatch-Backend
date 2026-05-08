@@ -11,7 +11,7 @@ This repository contains only the backend API. The frontend (React) lives in a s
 ## Tech Stack
 
 - **.NET 10** (Web API)
-- **Entity Framework Core** with SQL Server
+- **Entity Framework Core** with PostgreSQL (Npgsql)
 - **MediatR** for CQRS
 - **FluentValidation** for input validation
 - **AutoMapper** for entity-to-DTO mapping
@@ -141,8 +141,10 @@ Cinematch.Application/
     Exceptions/
     Mappings/
   Interfaces/
-    IWatchPartyRepository.cs
-    ITmdbService.cs
+    IGenericRepository.cs
+    IUnitOfWork.cs
+    IWatchPartyRepository.cs   (entity-specific, add as needed)
+    ITmdbService.cs            (external service, add as needed)
   DependencyInjection.cs
 ```
 
@@ -178,10 +180,11 @@ Cinematch.Application/
 - Validators registered as Pipeline Behavior in MediatR — runs automatically before handler
 
 ### Repositories
-- Generic `IGenericRepository<T>` for standard CRUD
+- Generic `IGenericRepository<T>` for standard CRUD — registered as open generic in Infrastructure DI
 - Specific repositories for entity-specific logic (e.g., `IWatchPartyRepository.GetByJoinCodeAsync`)
 - Repositories return entities, never DTOs
 - All database logic lives in repositories — never in handlers
+- Use `IUnitOfWork.SaveChangesAsync()` to persist changes — never call `DbContext.SaveChanges` directly in handlers or repositories
 
 ### Error Handling
 - Custom exceptions for domain-specific errors (`WatchPartyNotFoundException`, `InvalidJoinCodeException`, etc.)
