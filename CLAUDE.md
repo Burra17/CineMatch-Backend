@@ -13,6 +13,7 @@ This repository contains only the backend API. The frontend (React) lives in a s
 - **.NET 10** (Web API)
 - **Entity Framework Core** with PostgreSQL (Npgsql)
 - **MediatR** for CQRS
+- **ErrorOr** for the Result pattern and expected application errors
 - **FluentValidation** for input validation
 - **AutoMapper** for entity-to-DTO mapping
 - **JWT** for authentication
@@ -169,6 +170,8 @@ Cinematch.Application/
 - Handlers should be small and focused — extract logic to domain services if needed
 - One command/query per file
 - Return DTOs from queries, never entities
+- Commands and queries should return `ErrorOr<T>` from MediatR handlers
+- Use `ErrorOr` for expected business/application failures instead of throwing custom exceptions
 
 ### DTOs
 - All client communication uses DTOs
@@ -178,6 +181,8 @@ Cinematch.Application/
 ### Validation
 - FluentValidation for all commands and DTOs that take input
 - Validators registered as Pipeline Behavior in MediatR — runs automatically before handler
+- Validation errors are converted to `Error.Validation(...)` by `ValidationBehaviour<TRequest, TResponse>`
+- MediatR responses that use validation must implement `IErrorOr` (normally by returning `ErrorOr<T>`)
 
 ### Repositories
 - Generic `IGenericRepository<T>` for standard CRUD — registered as open generic in Infrastructure DI
@@ -187,10 +192,32 @@ Cinematch.Application/
 - Use `IUnitOfWork.SaveChangesAsync()` to persist changes — never call `DbContext.SaveChanges` directly in handlers or repositories
 
 ### Error Handling
-- Custom exceptions for domain-specific errors (`WatchPartyNotFoundException`, `InvalidJoinCodeException`, etc.)
-- Centralized exception middleware in the API layer
-- Correct HTTP status codes: 400, 401, 403, 404, 500
-- Use try/catch sparingly — let exceptions bubble up to middleware
+- Use the `ErrorOr` Result pattern for expected errors: validation failures, not found, conflicts, forbidden actions, and invalid business operations
+- Do not create custom exceptions for normal domain/application flow such as `WatchPartyNotFoundException` or `InvalidJoinCodeException`
+- Handlers return either a success value or one or more `Error` values:
+  ```csharp
+  public record GetWatchPartyByIdQuery(Guid Id) : IRequest<ErrorOr<WatchPartyDto>>;
+
+  public async Task<ErrorOr<WatchPartyDto>> Handle(
+      GetWatchPartyByIdQuery request,
+      CancellationToken cancellationToken)
+  {
+      var watchParty = await _watchPartyRepository.GetByIdAsync(request.Id, cancellationToken);
+
+      if (watchParty is null)
+      {
+          return Error.NotFound(
+              code: "WatchParty.NotFound",
+              description: "Watch party was not found.");
+      }
+
+      return _mapper.Map<WatchPartyDto>(watchParty);
+  }
+  ```
+- Controllers stay thin: dispatch via MediatR and map `ErrorOr<T>` to `IActionResult` using shared API result mapping, e.g. `result.Match(Ok, Problem)`
+- Map `Error.Validation` to 400, `Error.Unauthorized` to 401, `Error.Forbidden` to 403, `Error.NotFound` to 404, `Error.Conflict` to 409, and unexpected/unmapped errors to 500
+- Centralized exception middleware in the API layer is only for unhandled/unexpected exceptions
+- Use try/catch sparingly — let unexpected exceptions bubble up to middleware
 
 ### Authentication
 - JWT with reasonable lifetime (1 hour)
