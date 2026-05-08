@@ -32,6 +32,9 @@ bld/
 [Oo]ut/
 [Ll]og/
 [Ll]ogs/
+# Build folders accidentally created with a Windows-style backslash in the name
+*\\[Dd]ebug/
+*\\[Rr]elease/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
