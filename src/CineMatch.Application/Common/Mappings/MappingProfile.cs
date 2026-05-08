@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using CineMatch.Application.Features.Users.Common.Dtos;
+using CineMatch.Domain.Models;
 
 namespace CineMatch.Application.Common.Mappings
 {
     public class MappingProfile : Profile
     {
-        //TODO: Add mapping configurations here
+        //Map from user to userDTO
+        public MappingProfile() 
+        {
+            CreateMap<User, UserDto>();
+        }
     }
 }
