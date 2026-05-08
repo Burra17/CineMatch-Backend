@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CineMatch.Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CineMatch.Infrastructure.Database
 {
@@ -6,6 +7,14 @@ namespace CineMatch.Infrastructure.Database
     {
         public AppDbContext(DbContextOptions options) : base(options)
         {
+        }
+
+        public DbSet<User> Users => Set<User>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
         }
     }
 }
