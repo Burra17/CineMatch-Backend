@@ -34,6 +34,8 @@ namespace CineMatch.API
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
 
