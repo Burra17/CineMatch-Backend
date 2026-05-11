@@ -19,6 +19,7 @@ namespace CineMatch.API
 
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();
+            builder.Services.AddApiServices();
 
 
             var app = builder.Build();
