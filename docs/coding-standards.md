@@ -1,6 +1,6 @@
-# Kodregler och projektstandard - Cinematch Backend
+# Kodregler och projektstandard - CineMatch Backend
 
-Detta dokument beskriver de kodregler, konventioner och standarder som gäller för backend-delen av Cinematch (.NET Core API). Alla i gruppen förväntas följa dessa regler för att hålla en hög och konsekvent kodkvalitet.
+Detta dokument beskriver de kodregler, konventioner och standarder som gäller för backend-delen av CineMatch (.NET 10 Web API). Alla i gruppen förväntas följa dessa regler för att hålla en hög och konsekvent kodkvalitet.
 
 ## Allmänna regler
 
@@ -45,12 +45,22 @@ Håll commits små och fokuserade. En commit ska göra en sak.
 
 ## Arkitektur
 
-Vi följer Clean Architecture med fyra projekt:
+Vi följer Clean Architecture med fyra projekt. Produktionsprojekten ligger under `src/`, testprojektet i repo-roten.
 
-- `Cinematch.Domain` - entiteter, enums, domänlogik. Inga externa beroenden.
-- `Cinematch.Application` - CQRS commands/queries, handlers, DTOs, interfaces, validering.
-- `Cinematch.Infrastructure` - EF Core, repositories, externa tjänster (TMDB), JWT.
-- `Cinematch.API` - controllers, middleware, DI-konfiguration, Program.cs.
+```
+CineMatch-Backend/
+  src/
+    CineMatch.API/
+    CineMatch.Application/
+    CineMatch.Infrastructure/
+    CineMatch.Domain/
+  CineMatch.Tests/
+```
+
+- `CineMatch.Domain` - entiteter, enums, domänlogik. Inga externa beroenden.
+- `CineMatch.Application` - CQRS commands/queries, handlers, DTOs, interfaces, validering, AutoMapper-profiler, pipeline behaviours.
+- `CineMatch.Infrastructure` - EF Core (`AppDbContext`), repositories, externa tjänster (TMDB), JWT, BCrypt-hashing, migrations.
+- `CineMatch.API` - controllers, middleware, DI-konfiguration, Program.cs, Scalar-dokumentation.
 
 Beroenden går alltid inåt: API → Application → Domain. Infrastructure beror på Application och Domain men aldrig tvärtom.
 
@@ -63,26 +73,75 @@ Beroenden går alltid inåt: API → Application → Domain. Infrastructure bero
 - Interfaces: `IPascalCase` (alltid med I-prefix)
 - Async-metoder: alltid suffix `Async`, t.ex. `GetMoviesAsync`
 
+### Naming för Commands, Queries, Handlers och Validators
+
+Filnamnen ska göra det glasklart vilken typ klassen är. Vi behåller alltid suffixet `Command`/`Query` även på handlern och validatorn.
+
+| Typ       | Mönster                              | Exempel                              |
+|-----------|--------------------------------------|--------------------------------------|
+| Command   | `{Verb}{Entity}Command`              | `RegisterUserCommand`                |
+| Query     | `{Verb}{Entity}Query`                | `GetUserByIdQuery`                   |
+| Handler   | `{CommandOrQueryName}Handler`        | `RegisterUserCommandHandler`         |
+| Validator | `{CommandOrQueryName}Validator`      | `RegisterUserCommandValidator`       |
+| DTO       | `{Entity}Dto` (eller actionspecifik response när formen är unik) | `UserDto` |
+| Errors    | `{Entity}Errors` (statisk klass med `Error`-properties) | `UserErrors`       |
+
+Regler:
+
+- Korta inte ner till `RegisterUserHandler` eller `RegisterUserValidator` — `Command`/`Query`-suffixet ska alltid vara med.
+- Mappnamnet matchar request-namnet utan suffixet (mappen `RegisterUser/` innehåller `RegisterUserCommand.cs` + `RegisterUserCommandHandler.cs` + `RegisterUserCommandValidator.cs`).
+- Interfaces för repositories följer `I{Entity}Repository`, t.ex. `IUserRepository`.
+- Externa tjänster (Infrastructure-implementationer) namnges efter implementationsdetaljen, t.ex. `BCryptPasswordHasher`, `JwtService`.
+
 ## Struktur i Application-lagret
 
-Använd CQRS-mönstret med tydligt separerade Commands och Queries:
+Använd CQRS-mönstret med tydligt separerade Commands och Queries. Varje feature har sin egen mapp under `Features/`. DTOs och felklasser för entiteten ligger under `Common/` inom samma feature-mapp.
 
 ```
-Application/
+CineMatch.Application/
   Features/
+    Users/
+      Commands/
+        RegisterUser/
+          RegisterUserCommand.cs
+          RegisterUserCommandHandler.cs
+          RegisterUserCommandValidator.cs
+      Queries/
+        GetUserById/
+          GetUserByIdQuery.cs
+          GetUserByIdQueryHandler.cs
+      Common/
+        Dtos/
+          UserDto.cs
+        Errors/
+          UserErrors.cs
     WatchParties/
       Commands/
         CreateWatchParty/
           CreateWatchPartyCommand.cs
-          CreateWatchPartyHandler.cs
-          CreateWatchPartyValidator.cs
+          CreateWatchPartyCommandHandler.cs
+          CreateWatchPartyCommandValidator.cs
       Queries/
         GetWatchPartyById/
           GetWatchPartyByIdQuery.cs
-          GetWatchPartyByIdHandler.cs
+          GetWatchPartyByIdQueryHandler.cs
+      Common/
+        Dtos/
+        Errors/
+  Common/
+    Behaviours/
+      ValidationBehaviour.cs
+      LoggingBehaviour.cs
+    Mappings/
+      MappingProfile.cs
+  Interfaces/
+    IGenericRepository.cs
+    IUnitOfWork.cs
+    IUserRepository.cs
+    IPasswordHasher.cs
+    IJwtService.cs
+  DependencyInjection.cs
 ```
-
-Varje feature har sin egen mapp. Varje command och query har sin egen mapp med tillhörande handler och validator.
 
 ## Allmänna kodregler
 
@@ -94,61 +153,90 @@ Varje feature har sin egen mapp. Varje command och query har sin egen mapp med t
 
 ## Felhantering
 
-- Använd custom exceptions för domänspecifika fel (t.ex. `WatchPartyNotFoundException`, `InvalidJoinCodeException`).
-- Kasta exceptions i Application-lagret när något går fel.
-- Hantera exceptions centralt i en exception middleware i API-lagret.
-- Returnera tydliga felmeddelanden och korrekta HTTP-statuskoder (400, 401, 403, 404, 500).
-- Använd try/catch där det är meningsfullt, inte överallt. Låt exceptions bubbla upp till middleware.
+Vi använder `ErrorOr` Result-mönstret för förväntade applikationsfel — inte custom exceptions.
+
+- Handlers returnerar `ErrorOr<T>` från MediatR. Vid fel returnera ett `Error`-värde, vid framgång ett `T`.
+- Definiera återanvändbara fel som statiska `Error`-properties i en per-entitet-klass under `Features/{Entity}/Common/Errors/`, t.ex. `UserErrors.EmailAlreadyExists`.
+- **Skapa inte** custom exceptions för normala flöden (t.ex. `WatchPartyNotFoundException`, `InvalidJoinCodeException`).
+- Validator-fel konverteras automatiskt till `Error.Validation(...)` av `ValidationBehaviour<TRequest, TResponse>` (kräver att responsen implementerar `IErrorOr`).
+- Controllers är tunna — dispatcha via MediatR och mappa `ErrorOr<T>` till `IActionResult` med extension-metoden `result.ToActionResult(this)` i `CineMatch.API/Common/ResultExtensions.cs`.
+- Mappning: `Validation` → 400, `Unauthorized` → 401, `Forbidden` → 403, `NotFound` → 404, `Conflict` → 409, övrigt → 500.
+- `ExceptionHandlingMiddleware` i API-lagret fångar bara **oväntade** exceptions och returnerar `ErrorResponse`-kontraktet. Använd try/catch sparsamt — låt oväntade exceptions bubbla upp till middleware.
 
 ## DTOs
 
 - All kommunikation mellan API och klient sker via DTOs, aldrig via entiteter direkt.
-- Använd AutoMapper för att mappa mellan entiteter och DTOs.
-- DTOs ligger i Application-lagret.
-- Namnge DTOs efter användningsområde, t.ex. `WatchPartyDto`, `CreateWatchPartyDto`, `WatchPartyDetailDto`.
+- Använd AutoMapper för att mappa mellan entiteter och DTOs (registrera mappningar i `Common/Mappings/MappingProfile.cs`).
+- DTOs ligger per feature i `Features/{Entity}/Common/Dtos/`, inte i en global `Dtos/`-mapp.
+- Namnge DTOs efter användningsområde, t.ex. `UserDto`, `WatchPartyDto`, `WatchPartyDetailDto`.
 
 ## Validering
 
 - Använd FluentValidation för alla commands och DTOs som tar input från klienten.
-- Validatorer ligger i samma mapp som tillhörande command.
-- Registrera validering som ett pipeline behavior i MediatR så att validering körs automatiskt innan handlern.
+- Validatorer ligger i samma mapp som tillhörande command och följer namnet `{CommandName}Validator` (t.ex. `RegisterUserCommandValidator`).
+- Validering körs automatiskt som pipeline behavior i MediatR (`ValidationBehaviour<,>`) — handlern triggas inte om validering misslyckas.
+- Validatorer registreras automatiskt via `AddValidatorsFromAssembly` i Application-lagrets `DependencyInjection.cs`.
 
 ## Repositories
 
-- Använd Repository Pattern. Skapa en generisk `IGenericRepository<T>` för vanliga CRUD-operationer.
-- Skapa specifika repositories för entitetsspecifik logik, t.ex. `IWatchPartyRepository` med metod `GetByJoinCodeAsync`.
+- Använd Repository Pattern. Generisk `IGenericRepository<T>` täcker vanliga CRUD-operationer (`GetByIdAsync`, `GetAllAsync`, `AddAsync`, `Update`, `Delete`) och registreras som öppen generic i Infrastructure-DI.
+- Skapa specifika repositories för entitetsspecifik logik genom att ärva från `GenericRepository<T>` och implementera ett eget interface, t.ex. `IUserRepository : IGenericRepository<User>` med `GetByEmailAsync`, `ExistsByEmailAsync`.
 - Repositories returnerar entiteter, aldrig DTOs.
 - All databaslogik ska ligga i repositories, inte i handlers.
+- Anropa **aldrig** `DbContext.SaveChanges` direkt i handlers eller repositories — använd `IUnitOfWork.SaveChangesAsync()` för att persistera ändringar.
+- EF Core-konfiguration ligger i `CineMatch.Infrastructure/Database/Configurations/` (t.ex. `UserConfiguration : IEntityTypeConfiguration<User>`) och plockas upp automatiskt av `AppDbContext` via `ApplyConfigurationsFromAssembly`.
 
 ## Pipeline Behaviours
 
 - Implementera pipeline behaviours i MediatR för cross-cutting concerns.
-- Minst en validation behavior och en logging behavior ska finnas.
-- Behaviours registreras i `DependencyInjection.cs` i Application-lagret.
+- `LoggingBehaviour<,>` och `ValidationBehaviour<,>` ska finnas registrerade.
+- Behaviours registreras i `DependencyInjection.cs` i Application-lagret som `IPipelineBehavior<,>`.
 
 ## Authentication och Authorization
 
-- Använd JWT för authentication.
-- Lösenord ska alltid hashas med BCrypt eller liknande. Aldrig spara lösenord i klartext.
+- Använd JWT för authentication. Tokens genereras i `JwtService` (Infrastructure) bakom interfacet `IJwtService` (Application).
+- Lösenord ska alltid hashas med BCrypt via `IPasswordHasher` / `BCryptPasswordHasher`. Aldrig spara lösenord i klartext.
 - Använd `[Authorize]`-attribut på protected endpoints.
-- Använd `[Authorize(Roles = "Admin")]` för rollbaserad åtkomst.
-- Tokens ska ha rimlig livslängd (t.ex. 1 timme) och stödja refresh tokens om möjligt.
-- JWT-secret och andra känsliga värden ligger i appsettings eller user secrets, aldrig hårdkodat.
+- Använd `[Authorize(Roles = "Admin")]` för rollbaserad åtkomst (rollerna definieras av enumen `UserRole`).
+- Tokens ska ha rimlig livslängd (t.ex. 1 timme). Refresh tokens är TBD — implementera när det beslutats.
+- JWT-secret och andra känsliga värden ligger i appsettings eller user secrets, aldrig hårdkodat eller committat. Hemligheten ska vara minst 32 tecken — `AddJwtAuthentication` validerar detta vid uppstart.
 
 ## Tester
 
-- Tester ligger i ett separat projekt: `Cinematch.Tests`.
+- Tester ligger i ett separat projekt: `CineMatch.Tests`.
 - Fokusera på handlers i Application-lagret.
-- Använd NUnit.
-- Namnge tester enligt mönstret `MethodName_Scenario_ExpectedResult`, t.ex. `Handle_ValidCommand_ReturnsWatchPartyId`.
+- Använd NUnit (`[Test]`, `[SetUp]`, `[OneTimeSetUp]`, `Assert.That(...)`).
+- Namnge tester enligt mönstret `MethodName_Scenario_ExpectedResult`, t.ex. `Handle_ValidCommand_ReturnsUserId`.
 - Varje test ska vara oberoende och kunna köras i valfri ordning.
+- Mocka repositories och externa tjänster (t.ex. TMDB). Mocking-bibliotek (Moq rekommenderas) läggs till när det behövs.
 - Sträva efter att alla CRUD-flöden för alla entiteter har tester (VG-krav).
 
 ## Dependency Injection
 
 - Använd en separat `DependencyInjection.cs`-fil per projekt (Application, Infrastructure) för service-registreringar.
 - Program.cs ska bara anropa extension-metoderna, inte registrera services direkt.
-- Exempel: `builder.Services.AddApplication();` och `builder.Services.AddInfrastructure(builder.Configuration);`
+- Exempel:
+  ```csharp
+  builder.Services.AddInfrastructure(builder.Configuration);
+  builder.Services.AddApplication();
+  ```
+
+## Vanliga kommandon
+
+```bash
+# Kör API:t
+dotnet run --project src/CineMatch.API
+
+# Kör tester
+dotnet test
+
+# Skapa en migration
+dotnet ef migrations add MigrationName `
+  --project src/CineMatch.Infrastructure `
+  --startup-project src/CineMatch.API
+```
+
+API-dokumentationen (Scalar) finns på `/scalar` när projektet körs.
 
 ## Dokumentation
 
@@ -157,16 +245,16 @@ Varje feature har sin egen mapp. Varje command och query har sin egen mapp med t
 Repot ska ha en README som innehåller:
 
 - Projektets namn och kort beskrivning
-- Tekniker och bibliotek som används (.NET 8, EF Core, MediatR, FluentValidation, etc.)
-- Förutsättningar (t.ex. .NET 8 SDK, SQL Server eller motsvarande)
+- Tekniker och bibliotek som används (.NET 10, EF Core med Npgsql, MediatR, ErrorOr, FluentValidation, AutoMapper, BCrypt, JWT, Scalar)
+- Förutsättningar (.NET 10 SDK, PostgreSQL)
 - Steg-för-steg-instruktioner för att starta projektet lokalt, inklusive migrations
 - Hur man kör tester
-- Hur man når API-dokumentation (Swagger eller Scalar)
+- Hur man når API-dokumentation (Scalar på `/scalar`)
 - Länk till frontend-repot
 
 ### API-dokumentation
 
-- Använd Swagger eller Scalar för att dokumentera alla endpoints.
+- Använd Scalar för att dokumentera alla endpoints (registreras via `MapScalarApiReference` i Development).
 - Alla endpoints ska ha tydliga beskrivningar, parametrar och exempel-responses.
 - Markera vilka endpoints som kräver autentisering.
 
@@ -180,10 +268,10 @@ Repot ska ha en README som innehåller:
 
 Vid pull requests ska reviewern kontrollera:
 
-- Följs namnkonventioner och kodstil?
+- Följs namnkonventioner och kodstil (inkl. `Command`/`Query`-suffix på handlers och validators)?
 - Är koden läsbar och självförklarande?
 - Finns relevanta tester?
-- Hanteras fel korrekt?
+- Hanteras fel korrekt med `ErrorOr` (inte custom exceptions)?
 - Är commit-historiken ren och meningsfull?
 - Bryts Clean Architecture lager-regler någonstans?
 - Finns onödig kod, console-utskrifter eller kommenterad kod?
