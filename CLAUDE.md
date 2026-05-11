@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-This document provides Claude (and other AI assistants) with context about the Cinematch backend project. Read this before suggesting code, making changes, or creating new files.
+This document provides Claude (and other AI assistants) with context about the CineMatch backend project. Read this before suggesting code, making changes, or creating new files.
 
 ## Project Overview
 
-Cinematch is a web application where multiple users can join a "WatchParty" and swipe on movies together (Tinder-style). When all members of the party have liked the same movie, a match is created and shown to everyone. The goal is to help friends or couples find a movie everyone wants to watch without endless discussion.
+CineMatch is a web application where multiple users can join a "WatchParty" and swipe on movies together (Tinder-style). When all members of the party have liked the same movie, a match is created and shown to everyone. The goal is to help friends or couples find a movie everyone wants to watch without endless discussion.
 
 This repository contains only the backend API. The frontend (React) lives in a separate repository.
 
@@ -27,39 +27,58 @@ This repository contains only the backend API. The frontend (React) lives in a s
 We follow Clean Architecture with four projects. Dependencies always point inward — outer layers depend on inner layers, never the other way around.
 
 ```
-Cinematch.API           → Cinematch.Application
-Cinematch.Infrastructure → Cinematch.Application, Cinematch.Domain
-Cinematch.Application   → Cinematch.Domain
-Cinematch.Domain        → (no dependencies)
+CineMatch.API            → CineMatch.Application, CineMatch.Infrastructure
+CineMatch.Infrastructure → CineMatch.Application, CineMatch.Domain
+CineMatch.Application    → CineMatch.Domain
+CineMatch.Domain         → (no dependencies)
 ```
 
-### Cinematch.Domain
+### Solution Layout
+
+The four production projects live under `src/`. The test project sits at the repo root.
+
+```
+CineMatch-Backend/
+  src/
+    CineMatch.API/
+    CineMatch.Application/
+    CineMatch.Infrastructure/
+    CineMatch.Domain/
+  CineMatch.Tests/
+```
+
+### CineMatch.Domain
 - Entities, value objects, enums, domain logic
 - No external dependencies (no NuGet packages beyond standard library)
 - Pure C# — no EF Core, no MediatR, nothing
+- Entities live under `Models/`, enums under `Enums/`
 
-### Cinematch.Application
+### CineMatch.Application
 - CQRS commands and queries via MediatR
 - Handlers, DTOs, interfaces (for repositories and external services)
 - FluentValidation validators
 - AutoMapper profiles
 - Pipeline behaviours (validation, logging)
+- Feature-scoped DTOs and error classes (under `Features/{Entity}/Common/`)
 
-### Cinematch.Infrastructure
-- EF Core DbContext and configuration
+### CineMatch.Infrastructure
+- EF Core `AppDbContext` and entity configurations (under `Database/`)
 - Repository implementations (interfaces defined in Application)
 - TMDB client (implements `ITmdbService` from Application)
-- JWT token generation
+- JWT token generation, BCrypt password hashing
 - Migrations
+- Strongly-typed settings (e.g., `JwtSettings`) under `Database/Configurations/`
 
-### Cinematch.API
+### CineMatch.API
 - Controllers (thin — just dispatch commands/queries via MediatR)
 - Middleware (exception handling, authentication)
+- `Common/ResultExtensions.cs` for mapping `ErrorOr<T>` to `IActionResult`
+- `Contracts/` for API-level response shapes (e.g., `ErrorResponse`)
 - Program.cs and DI configuration
 - appsettings
 
 ### Tests
-- `Cinematch.Tests` — separate project focused on Application handlers
+- `CineMatch.Tests` — separate project focused on Application handlers
 
 ## Domain Model
 
@@ -114,21 +133,39 @@ Only the host can start the swipe session. If the host leaves the party: the rol
 
 ## Application Layer Structure
 
-Use CQRS with one folder per feature. Each command and query has its own folder:
+Use CQRS with one folder per feature. Each command and query has its own folder. Filenames must include the suffix `Command` / `Query` and the handler/validator must repeat that suffix (so it is clear at a glance whether a class belongs to a command or a query).
 
 ```
-Cinematch.Application/
+CineMatch.Application/
   Features/
+    Users/
+      Commands/
+        RegisterUser/
+          RegisterUserCommand.cs
+          RegisterUserCommandHandler.cs
+          RegisterUserCommandValidator.cs
+      Queries/
+        GetUserById/
+          GetUserByIdQuery.cs
+          GetUserByIdQueryHandler.cs
+      Common/
+        Dtos/
+          UserDto.cs
+        Errors/
+          UserErrors.cs
     WatchParties/
       Commands/
         CreateWatchParty/
           CreateWatchPartyCommand.cs
-          CreateWatchPartyHandler.cs
-          CreateWatchPartyValidator.cs
+          CreateWatchPartyCommandHandler.cs
+          CreateWatchPartyCommandValidator.cs
       Queries/
         GetWatchPartyById/
           GetWatchPartyByIdQuery.cs
-          GetWatchPartyByIdHandler.cs
+          GetWatchPartyByIdQueryHandler.cs
+      Common/
+        Dtos/
+        Errors/
     Swipes/
       Commands/
         CreateSwipe/
@@ -139,15 +176,35 @@ Cinematch.Application/
     Behaviours/
       ValidationBehaviour.cs
       LoggingBehaviour.cs
-    Exceptions/
     Mappings/
+      MappingProfile.cs
   Interfaces/
     IGenericRepository.cs
     IUnitOfWork.cs
+    IUserRepository.cs
     IWatchPartyRepository.cs   (entity-specific, add as needed)
+    IPasswordHasher.cs
+    IJwtService.cs
     ITmdbService.cs            (external service, add as needed)
   DependencyInjection.cs
 ```
+
+### Naming for Commands, Queries, Handlers, and Validators
+
+| Concern   | Pattern                              | Example                              |
+|-----------|--------------------------------------|--------------------------------------|
+| Command   | `{Verb}{Entity}Command`              | `RegisterUserCommand`                |
+| Query     | `{Verb}{Entity}Query`                | `GetUserByIdQuery`                   |
+| Handler   | `{CommandOrQueryName}Handler`        | `RegisterUserCommandHandler`         |
+| Validator | `{CommandOrQueryName}Validator`      | `RegisterUserCommandValidator`       |
+| DTO       | `{Entity}Dto` (or `{Verb}{Entity}Response` when the shape is action-specific) | `UserDto`         |
+| Errors    | `{Entity}Errors` (static class)      | `UserErrors`                         |
+
+Rules:
+- Handlers and validators must include the full `Command` or `Query` suffix from the request name — never shorten to `RegisterUserHandler`.
+- The folder name matches the request name without the suffix (e.g., folder `RegisterUser/` contains `RegisterUserCommand.cs` + `...CommandHandler.cs` + `...CommandValidator.cs`).
+- DTOs are stored per feature under `Features/{Entity}/Common/Dtos/`, not in a global `Dtos/` folder.
+- Static error classes live under `Features/{Entity}/Common/Errors/` and expose `Error` properties (see `UserErrors`).
 
 ## Code Conventions
 
@@ -194,29 +251,32 @@ Cinematch.Application/
 ### Error Handling
 - Use the `ErrorOr` Result pattern for expected errors: validation failures, not found, conflicts, forbidden actions, and invalid business operations
 - Do not create custom exceptions for normal domain/application flow such as `WatchPartyNotFoundException` or `InvalidJoinCodeException`
+- Define reusable errors as static `Error` properties on a per-entity class (e.g., `UserErrors.EmailAlreadyExists`) under `Features/{Entity}/Common/Errors/`
 - Handlers return either a success value or one or more `Error` values:
   ```csharp
   public record GetWatchPartyByIdQuery(Guid Id) : IRequest<ErrorOr<WatchPartyDto>>;
 
-  public async Task<ErrorOr<WatchPartyDto>> Handle(
-      GetWatchPartyByIdQuery request,
-      CancellationToken cancellationToken)
+  public class GetWatchPartyByIdQueryHandler
+      : IRequestHandler<GetWatchPartyByIdQuery, ErrorOr<WatchPartyDto>>
   {
-      var watchParty = await _watchPartyRepository.GetByIdAsync(request.Id, cancellationToken);
-
-      if (watchParty is null)
+      public async Task<ErrorOr<WatchPartyDto>> Handle(
+          GetWatchPartyByIdQuery request,
+          CancellationToken cancellationToken)
       {
-          return Error.NotFound(
-              code: "WatchParty.NotFound",
-              description: "Watch party was not found.");
-      }
+          var watchParty = await _watchPartyRepository.GetByIdAsync(request.Id, cancellationToken);
 
-      return _mapper.Map<WatchPartyDto>(watchParty);
+          if (watchParty is null)
+          {
+              return WatchPartyErrors.NotFound;
+          }
+
+          return _mapper.Map<WatchPartyDto>(watchParty);
+      }
   }
   ```
-- Controllers stay thin: dispatch via MediatR and map `ErrorOr<T>` to `IActionResult` using shared API result mapping, e.g. `result.Match(Ok, Problem)`
-- Map `Error.Validation` to 400, `Error.Unauthorized` to 401, `Error.Forbidden` to 403, `Error.NotFound` to 404, `Error.Conflict` to 409, and unexpected/unmapped errors to 500
-- Centralized exception middleware in the API layer is only for unhandled/unexpected exceptions
+- Controllers stay thin: dispatch via MediatR and map `ErrorOr<T>` to `IActionResult` using the shared `ResultExtensions.ToActionResult(this)` extension in `CineMatch.API/Common`
+- Map `Error.Validation` to 400, `Error.Unauthorized` to 401, `Error.Forbidden` to 403, `Error.NotFound` to 404, `Error.Conflict` to 409, and unexpected/unmapped errors to 500 (see `ResultExtensions`)
+- Centralized exception middleware (`ExceptionHandlingMiddleware`) in the API layer is only for unhandled/unexpected exceptions and returns the `ErrorResponse` contract
 - Use try/catch sparingly — let unexpected exceptions bubble up to middleware
 
 ### Authentication
@@ -294,33 +354,35 @@ Small, focused commits.
 ## Common Tasks
 
 ### Add a new entity
-1. Create the entity in `CineMatch.Domain/Models`
-2. Configure EF Core in `Cinematch.Infrastructure/Persistence/Configurations`
-3. Add DbSet to `ApplicationDbContext`
-4. Create migration: `dotnet ef migrations add AddMyEntity --project Cinematch.Infrastructure --startup-project Cinematch.API`
-5. Create repository (interface in Application, implementation in Infrastructure)
-6. Create DTOs and AutoMapper profile
-7. Create CQRS features (commands/queries) in `Cinematch.Application/Features/MyEntity`
-8. Create controller in `Cinematch.API/Controllers`
-9. Write tests for handlers
+1. Create the entity in `src/CineMatch.Domain/Models`
+2. Configure EF Core in `src/CineMatch.Infrastructure/Database/Configurations`
+3. Add `DbSet` to `AppDbContext`
+4. Create migration: `dotnet ef migrations add AddMyEntity --project src/CineMatch.Infrastructure --startup-project src/CineMatch.API`
+5. Create repository (interface in Application `Interfaces/`, implementation in Infrastructure `Database/Repositories/`) — extend `GenericRepository<T>` when possible
+6. Create feature folder `src/CineMatch.Application/Features/MyEntity/Common/{Dtos,Errors}/` and add `MyEntityDto`, `MyEntityErrors`
+7. Add an AutoMapper mapping in `Common/Mappings/MappingProfile.cs`
+8. Create CQRS features (commands/queries) in `src/CineMatch.Application/Features/MyEntity/{Commands,Queries}/` using the naming pattern `{Verb}{Entity}Command`, `{Verb}{Entity}CommandHandler`, `{Verb}{Entity}CommandValidator`
+9. Create controller in `src/CineMatch.API/Controllers`
+10. Register the repository in `src/CineMatch.Infrastructure/DependencyInjection.cs`
+11. Write tests for handlers in `CineMatch.Tests`
 
 ### Add a new endpoint
-1. Create command or query with handler in the Application layer
-2. Create validator if input needs validation
-3. Add method to relevant controller — dispatch via MediatR
+1. Create command or query with handler in the Application layer (`{Verb}{Entity}Command` + `{Verb}{Entity}CommandHandler`)
+2. Create validator if input needs validation (`{Verb}{Entity}CommandValidator`)
+3. Add method to relevant controller — dispatch via MediatR and return `result.ToActionResult(this)`
 4. Add `[Authorize]` if endpoint requires authentication
 5. Write test for the handler
 
 ### Create a migration
 ```bash
-dotnet ef migrations add MigrationName \
-  --project Cinematch.Infrastructure \
-  --startup-project Cinematch.API
+dotnet ef migrations add MigrationName `
+  --project src/CineMatch.Infrastructure `
+  --startup-project src/CineMatch.API
 ```
 
 ### Run the project
 ```bash
-dotnet run --project Cinematch.API
+dotnet run --project src/CineMatch.API
 ```
 Scalar documentation is available at `/scalar` when the project is running.
 
