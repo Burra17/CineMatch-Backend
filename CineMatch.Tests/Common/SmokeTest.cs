@@ -17,5 +17,11 @@ namespace CineMatch.Tests.Common
             // Assert
             Assert.That(actual, Is.EqualTo(expected));
         }
+
+        [Test]
+        public void CiVerificationTest_ShouldFail()
+        {
+            Assert.That(true, Is.EqualTo(false));
+        }
     }
 }
