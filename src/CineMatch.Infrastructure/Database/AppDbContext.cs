@@ -10,6 +10,8 @@ namespace CineMatch.Infrastructure.Database
         }
 
         public DbSet<User> Users => Set<User>();
+        public DbSet<WatchParty> WatchParties => Set<WatchParty>();
+        public DbSet<PartyMember> PartyMembers => Set<PartyMember>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
