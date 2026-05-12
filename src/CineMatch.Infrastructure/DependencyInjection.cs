@@ -11,70 +11,69 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace CineMatch.Infrastructure
+namespace CineMatch.Infrastructure;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Repositories
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
+        services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
+        services.AddScoped<IMovieRepository, MovieRepository>();
+
+        // Services
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
+
+        AddJwtAuthentication(services, configuration);
+
+        return services;
+    }
+
+    private static void AddJwtAuthentication(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
+        var jwtSettings = configuration
+            .GetSection(JwtSettings.SectionName)
+            .Get<JwtSettings>()
+            ?? throw new InvalidOperationException("JwtSettings is not configured");
+
+        if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || jwtSettings.Secret.Length < 32)
         {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-            // Repositories
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
-            services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
-            services.AddScoped<IMovieRepository, MovieRepository>();
-
-            // Services
-            services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-            services.AddScoped<IJwtService, JwtService>();
-            services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
-
-            AddJwtAuthentication(services, configuration);
-
-            return services;
+            throw new InvalidOperationException(
+                "JwtSettings:Secret must be at least 32 characters. " +
+                "Set it via user secrets: dotnet user-secrets set ");
         }
 
-        private static void AddJwtAuthentication(
-            IServiceCollection services,
-            IConfiguration configuration)
-        {
-            services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-
-            var jwtSettings = configuration
-                .GetSection(JwtSettings.SectionName)
-                .Get<JwtSettings>()
-                ?? throw new InvalidOperationException("JwtSettings is not configured");
-
-            if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || jwtSettings.Secret.Length < 32)
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
-                throw new InvalidOperationException(
-                    "JwtSettings:Secret must be at least 32 characters. " +
-                    "Set it via user secrets: dotnet user-secrets set ");
-            }
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Audience,
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(jwtSettings.Secret)),
-                        ClockSkew = TimeSpan.Zero
-                    };
-                });
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
-            services.AddAuthorization();
-        }
+        services.AddAuthorization();
     }
 }

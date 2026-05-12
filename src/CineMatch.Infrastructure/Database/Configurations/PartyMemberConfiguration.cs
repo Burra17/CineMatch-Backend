@@ -1,4 +1,4 @@
-﻿using CineMatch.Domain.Models;
+using CineMatch.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -22,17 +22,19 @@ internal class PartyMemberConfiguration : IEntityTypeConfiguration<PartyMember>
         builder.Property(pm => pm.LeftAt)
             .IsRequired(false);
 
-        // Composite unique constraint — användare kan bara vara med i party en gång
+        // Composite unique constraint enforces one membership row per (user, party).
+        // Combined with the soft-delete pattern (IsActive=false), this is why JoinWatchPartyCommandHandler
+        // reactivates an existing row instead of inserting a duplicate.
         builder.HasIndex(pm => new { pm.UserId, pm.WatchPartyId })
             .IsUnique();
 
-        // Relation till User
+        // Restrict: a user with membership history can't be deleted out from under their party rows.
         builder.HasOne(pm => pm.User)
             .WithMany(u => u.PartyMemberships)
             .HasForeignKey(pm => pm.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Relation till WatchParty (Cascade så medlemskap raderas om partyt raderas)
+        // Cascade: if a party is hard-deleted, its memberships go with it — they have no parent otherwise.
         builder.HasOne(pm => pm.WatchParty)
             .WithMany(wp => wp.PartyMembers)
             .HasForeignKey(pm => pm.WatchPartyId)
