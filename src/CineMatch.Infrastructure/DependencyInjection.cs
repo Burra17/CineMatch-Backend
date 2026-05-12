@@ -32,6 +32,7 @@ namespace CineMatch.Infrastructure
 
             services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
             services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
+            services.AddScoped<IMovieRepository, MovieRepository>();
 
             services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
 
