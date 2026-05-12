@@ -6,7 +6,7 @@ using CineMatch.Domain.Models;
 using ErrorOr;
 using MediatR;
 
-namespace CineMatch.Application.Features.WatchParties.Commands
+namespace CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty
 {
     public class CreateWatchPartyCommandHandler : IRequestHandler<CreateWatchPartyCommand, ErrorOr<WatchPartyDto>>
     {

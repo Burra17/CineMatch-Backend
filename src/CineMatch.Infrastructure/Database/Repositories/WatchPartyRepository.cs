@@ -14,6 +14,7 @@ namespace CineMatch.Infrastructure.Database.Repositories
         public async Task<WatchParty?> GetByIdWithMembersAsync(Guid id, CancellationToken cancellationToken)
         {
             return await _context.WatchParties
+                .Include(wp => wp.Host)
                 .Include(wp => wp.PartyMembers)
                 .ThenInclude(pm => pm.User)
                 .FirstOrDefaultAsync(wp => wp.Id == id, cancellationToken);
