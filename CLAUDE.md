@@ -88,10 +88,10 @@ CineMatch-Backend/
 - Id (Guid), Username (string), Email (string), PasswordHash (string), Role (UserRole), IsEmailConfirmed (bool), CreatedAt (DateTime), UpdatedAt (DateTime?)
 
 **WatchParty**
-- Id (Guid), JoinCode (string), HostId (Guid), Genre (string), IsActive (bool), CreatedAt (DateTime)
+- Id (Guid), JoinCode (string), HostId (Guid), Genre (string), IsActive (bool), CreatedAt (DateTime), ClosedAt (DateTime?)
 
 **PartyMember** (join table between User and WatchParty)
-- Id (Guid), UserId (Guid), WatchPartyId (Guid), JoinedAt (DateTime)
+- Id (Guid), UserId (Guid), WatchPartyId (Guid), JoinedAt (DateTime), LeftAt (DateTime?), IsActive (bool)
 
 **Movie** (cached from TMDB)
 - Id (Guid), TmdbId (int, unique), Title (string), PosterUrl (string), Overview (string), ReleaseYear (int)
