@@ -2,7 +2,8 @@
 using CineMatch.Application.Features.Users.Common.Dtos;
 using CineMatch.Application.Features.Users.Common.Errors;
 using CineMatch.Application.Features.Users.Queries.GetCurrentUser;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
+using CineMatch.Application.Interfaces.Services;
 using CineMatch.Domain.Enums;
 using CineMatch.Domain.Models;
 using NSubstitute;

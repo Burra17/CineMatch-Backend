@@ -1,52 +1,54 @@
 ﻿using AutoMapper;
 using CineMatch.Application.Features.Users.Common.Dtos;
 using CineMatch.Application.Features.Users.Common.Errors;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
+using CineMatch.Application.Interfaces.Services;
 using ErrorOr;
 using MediatR;
 
-namespace CineMatch.Application.Features.Users.Commands.LoginUser
+namespace CineMatch.Application.Features.Users.Commands.LoginUser;
+
+public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, ErrorOr<LoginResponseDto>>
 {
-    public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, ErrorOr<LoginResponseDto>>
+    private readonly IMapper _mapper;
+    private readonly IPasswordHasher _passwordHasher;
+    private readonly IJwtService _jwtService;
+    private readonly IUserRepository _userRepository;
+
+    public LoginUserCommandHandler(
+        IMapper mapper,
+        IPasswordHasher passwordHasher,
+        IJwtService jwtService,
+        IUserRepository userRepository)
     {
-        private readonly IMapper _mapper;
-        private readonly IPasswordHasher _passwordHasher;
-        private readonly IJwtService _jwtService;
-        private readonly IUserRepository _userRepository;
+        _mapper = mapper;
+        _passwordHasher = passwordHasher;
+        _jwtService = jwtService;
+        _userRepository = userRepository;
+    }
 
-        public LoginUserCommandHandler(
-            IMapper mapper, 
-            IPasswordHasher passwordHasher,
-            IJwtService jwtService,
-            IUserRepository userRepository)
+    public async Task<ErrorOr<LoginResponseDto>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
+
+        // Use the same error for both "user not found" and "wrong password" to avoid leaking
+        // whether an email is registered. Don't split these into more specific errors.
+        if (user is null)
         {
-            _mapper = mapper;
-            _passwordHasher = passwordHasher;
-            _jwtService = jwtService;
-            _userRepository = userRepository;
+            return UserErrors.InvalidCredentials;
         }
 
-        public async Task<ErrorOr<LoginResponseDto>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+        var isPasswordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
+
+        if (!isPasswordValid)
         {
-            var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-
-            if (user is null)
-            {
-                return UserErrors.InvalidCredentials;
-            }
-
-            var isPasswordValid = _passwordHasher.VerifyPassword(request.Password, user.PasswordHash);
-
-            if (!isPasswordValid)
-            {
-                return UserErrors.InvalidCredentials;
-            }
-
-            var token = _jwtService.GenerateToken(user);
-
-            return new LoginResponseDto(
-                Token: token,
-                User: _mapper.Map<UserDto>(user));
+            return UserErrors.InvalidCredentials;
         }
+
+        var token = _jwtService.GenerateToken(user);
+
+        return new LoginResponseDto(
+            Token: token,
+            User: _mapper.Map<UserDto>(user));
     }
 }

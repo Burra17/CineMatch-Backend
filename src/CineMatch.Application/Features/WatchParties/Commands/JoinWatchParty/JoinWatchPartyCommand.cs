@@ -2,8 +2,6 @@
 using ErrorOr;
 using MediatR;
 
-namespace CineMatch.Application.Features.WatchParties.Commands.JoinWatchParty
-{
-    public record JoinWatchPartyCommand(string JoinCode) : IRequest<ErrorOr<WatchPartyDto>>;
+namespace CineMatch.Application.Features.WatchParties.Commands.JoinWatchParty;
 
-}
+public record JoinWatchPartyCommand(string JoinCode) : IRequest<ErrorOr<WatchPartyDto>>;

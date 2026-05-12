@@ -1,4 +1,5 @@
-﻿using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
+using CineMatch.Application.Interfaces.Services;
 using CineMatch.Infrastructure.Database;
 using CineMatch.Infrastructure.Database.Configurations;
 using CineMatch.Infrastructure.Database.Repositories;
@@ -20,21 +21,20 @@ namespace CineMatch.Infrastructure
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            
+
+            // Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
             services.AddScoped<IUserRepository, UserRepository>();
-
-            services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-            services.AddScoped<IJwtService, JwtService>();
-
-            AddJwtAuthentication(services, configuration);
-
             services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
             services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
             services.AddScoped<IMovieRepository, MovieRepository>();
 
+            // Services
+            services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
+
+            AddJwtAuthentication(services, configuration);
 
             return services;
         }
@@ -78,4 +78,3 @@ namespace CineMatch.Infrastructure
         }
     }
 }
-

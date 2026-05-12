@@ -1,4 +1,4 @@
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
 using CineMatch.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 

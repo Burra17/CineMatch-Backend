@@ -1,4 +1,4 @@
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Services;
 using CineMatch.Domain.Models;
 using CineMatch.Infrastructure.Database.Configurations;
 using Microsoft.Extensions.Options;

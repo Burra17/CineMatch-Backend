@@ -2,7 +2,8 @@
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
+using CineMatch.Application.Interfaces.Services;
 
 namespace CineMatch.Infrastructure.Services
 {

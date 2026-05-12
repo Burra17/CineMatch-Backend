@@ -1,4 +1,4 @@
-﻿using CineMatch.Application.Interfaces;
+﻿using CineMatch.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CineMatch.Infrastructure.Database.Repositories

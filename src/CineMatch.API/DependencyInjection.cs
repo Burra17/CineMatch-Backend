@@ -1,5 +1,5 @@
 using CineMatch.API.Services;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Services;
 
 namespace CineMatch.API;
 

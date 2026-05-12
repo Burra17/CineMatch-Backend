@@ -1,5 +1,5 @@
 using CineMatch.Domain.Models;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 

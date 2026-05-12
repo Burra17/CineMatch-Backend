@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Services;
 
 namespace CineMatch.API.Services;
 

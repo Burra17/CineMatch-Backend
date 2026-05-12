@@ -8,7 +8,6 @@ public class UserMappingProfile : Profile
 {
     public UserMappingProfile()
     {
-        // Map from user to UserDto
         CreateMap<User, UserDto>();
     }
 }

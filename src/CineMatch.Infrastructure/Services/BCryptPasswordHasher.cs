@@ -1,4 +1,4 @@
-﻿using CineMatch.Application.Interfaces;
+﻿using CineMatch.Application.Interfaces.Services;
 
 namespace CineMatch.Infrastructure.Services
 {
