@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace CineMatch.Application.Features.WatchParties.Commands
+namespace CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty
 {
     public class CreateWatchPartyCommandValidator : AbstractValidator<CreateWatchPartyCommand>
     {
