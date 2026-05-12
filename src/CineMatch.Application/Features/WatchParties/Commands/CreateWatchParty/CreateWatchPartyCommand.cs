@@ -1,8 +1,8 @@
-﻿using CineMatch.Application.Features.WatchParties.Common.Dtos;
+using CineMatch.Application.Features.WatchParties.Common.Dtos;
 using ErrorOr;
 using MediatR;
 
 namespace CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty
 {
-    public record CreateWatchPartyCommand(string Genre) : IRequest<ErrorOr<WatchPartyDto>>;
+    public record CreateWatchPartyCommand : IRequest<ErrorOr<WatchPartyDto>>;
 }

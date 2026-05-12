@@ -22,7 +22,7 @@ public static class ResultExtensions
                 ErrorType.NotFound => controller.NotFound(result.Errors),
                 ErrorType.Conflict => controller.Conflict(result.Errors),
                 ErrorType.Unauthorized => controller.Unauthorized(result.Errors),
-                ErrorType.Forbidden => controller.Forbid(),
+                ErrorType.Forbidden => controller.StatusCode(StatusCodes.Status403Forbidden, result.Errors),
                 _ => controller.StatusCode(500, result.Errors)
             };
         }

@@ -10,6 +10,8 @@ namespace CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty
 {
     public class CreateWatchPartyCommandHandler : IRequestHandler<CreateWatchPartyCommand, ErrorOr<WatchPartyDto>>
     {
+        private const string DefaultGenre = "popular";
+
         private readonly ICurrentUserService _currentUserService;
         private readonly IJoinCodeGenerator _joinCodeGenerator;
         private readonly IWatchPartyRepository _watchPartyRepository;
@@ -46,7 +48,7 @@ namespace CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty
                 Id = Guid.NewGuid(),
                 JoinCode = joinCode,
                 HostId = userId.Value, 
-                Genre = string.IsNullOrWhiteSpace(request.Genre) ? "popular" : request.Genre,
+                Genre = DefaultGenre,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 PartyMembers = new List<PartyMember>()
@@ -66,8 +68,8 @@ namespace CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty
             await _watchPartyRepository.AddAsync(watchParty);
             await _unitOfWork.SaveChangesAsync();
 
-            // 5. Mappa och returnera
-            return _mapper.Map<WatchPartyDto>(watchParty);
+            var partyWithRelations = await _watchPartyRepository.GetByIdWithMembersAsync(watchParty.Id, cancellationToken);
+            return _mapper.Map<WatchPartyDto>(partyWithRelations);
         }
     }
 }
