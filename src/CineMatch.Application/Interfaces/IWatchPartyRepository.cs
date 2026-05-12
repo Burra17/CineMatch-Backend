@@ -1,0 +1,11 @@
+﻿using CineMatch.Domain.Models;
+
+namespace CineMatch.Application.Interfaces
+{
+    public interface IWatchPartyRepository : IGenericRepository<WatchParty>
+    {
+        Task<WatchParty?> GetByIdWithMembersAsync(Guid id, CancellationToken cancellationToken);
+        Task<WatchParty?> GetByJoinCodeAsync(string joinCode, CancellationToken cancellationToken);
+        Task<bool> IsJoinCodeUniqueAsync(string joinCode, CancellationToken cancellationToken);
+    }
+}
