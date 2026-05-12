@@ -33,6 +33,8 @@ namespace CineMatch.Infrastructure
             services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
             services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
 
+            services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
+
             return services;
         }
 
