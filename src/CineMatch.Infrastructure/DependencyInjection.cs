@@ -30,6 +30,9 @@ namespace CineMatch.Infrastructure
 
             AddJwtAuthentication(services, configuration);
 
+            services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
+            services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
+
             return services;
         }
 
@@ -70,8 +73,6 @@ namespace CineMatch.Infrastructure
 
             services.AddAuthorization();
         }
-
-            
-        }
     }
+}
 
