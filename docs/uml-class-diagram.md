@@ -50,6 +50,14 @@ classDiagram
         +DateTime CachedAt
     }
 
+    class WatchPartyMovie {
+        +Guid Id
+        +Guid WatchPartyId
+        +Guid MovieId
+        +int OrderIndex
+        +DateTime AddedAt
+    }
+
     class Swipe {
         +Guid Id
         +Guid PartyMemberId
@@ -97,6 +105,9 @@ classDiagram
     User "1" --> "*" RefreshToken : Owns
     User "0..1" --> "*" Match : MarksAsWatched
 
+    WatchParty "1" --> "*" WatchPartyMovie : Includes
+    Movie "1" --> "*" WatchPartyMovie : ListedIn
+
     WatchParty "1" --> "*" Swipe : Has
     PartyMember "1" --> "*" Swipe : Makes
     Movie "1" --> "*" Swipe : TargetOf
@@ -108,6 +119,7 @@ classDiagram
     note for User "Unique Constraints:\nEmail\nUsername"
     note for Movie "Unique Constraint:\nTmdbId"
     note for WatchParty "Unique Constraint:\nJoinCode (bland aktiva partyn)"
+    note for WatchPartyMovie "Composite Unique Constraints:\n(WatchPartyId, MovieId)\n(WatchPartyId, OrderIndex)"
     note for Swipe "Composite Unique Constraint:\n(PartyMemberId, MovieId)"
     note for PasswordResetToken "Unique Constraint:\nTokenHash"
     note for RefreshToken "Unique Constraint:\nTokenHash"

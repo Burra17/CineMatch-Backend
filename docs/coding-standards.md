@@ -115,33 +115,40 @@ CineMatch.Application/
           UserDto.cs
         Errors/
           UserErrors.cs
+        Mappings/
+          UserMappingProfile.cs
     WatchParties/
       Commands/
-        CreateWatchParty/
-          CreateWatchPartyCommand.cs
-          CreateWatchPartyCommandHandler.cs
-          CreateWatchPartyCommandValidator.cs
       Queries/
-        GetWatchPartyById/
-          GetWatchPartyByIdQuery.cs
-          GetWatchPartyByIdQueryHandler.cs
       Common/
         Dtos/
         Errors/
+        Mappings/
   Common/
     Behaviours/
       ValidationBehaviour.cs
       LoggingBehaviour.cs
-    Mappings/
-      MappingProfile.cs
+  Services/
+    MatchDetectionService.cs
   Interfaces/
-    IGenericRepository.cs
-    IUnitOfWork.cs
-    IUserRepository.cs
-    IPasswordHasher.cs
-    IJwtService.cs
+    Repositories/
+      IGenericRepository.cs
+      IUnitOfWork.cs
+      IUserRepository.cs
+      IWatchPartyRepository.cs
+      IPartyMemberRepository.cs
+      IMovieRepository.cs
+    Services/
+      ICurrentUserService.cs
+      IJwtService.cs
+      IPasswordHasher.cs
+      IJoinCodeGenerator.cs
+      ITmdbService.cs
+      IMatchDetectionService.cs
   DependencyInjection.cs
 ```
+
+AutoMapper-profiler ligger per feature under `Features/{Entity}/Common/Mappings/{Entity}MappingProfile.cs` och plockas upp automatiskt — ingen central `MappingProfile.cs`. Interfaces är uppdelade i `Interfaces/Repositories/` och `Interfaces/Services/` så det är tydligt vad som är dataåtkomst och vad som är tjänst.
 
 ## Allmänna kodregler
 
@@ -166,7 +173,8 @@ Vi använder `ErrorOr` Result-mönstret för förväntade applikationsfel — in
 ## DTOs
 
 - All kommunikation mellan API och klient sker via DTOs, aldrig via entiteter direkt.
-- Använd AutoMapper för att mappa mellan entiteter och DTOs (registrera mappningar i `Common/Mappings/MappingProfile.cs`).
+- Använd AutoMapper för att mappa mellan entiteter och DTOs. Mappningsprofiler ligger per feature under `Features/{Entity}/Common/Mappings/{Entity}MappingProfile.cs` och plockas upp automatiskt via `services.AddAutoMapper(cfg => cfg.AddMaps(...))` — ingen manuell registrering behövs.
+- För positional record-DTOs, använd `.ForCtorParam(...)` istället för `.ForMember(...)`.
 - DTOs ligger per feature i `Features/{Entity}/Common/Dtos/`, inte i en global `Dtos/`-mapp.
 - Namnge DTOs efter användningsområde, t.ex. `UserDto`, `WatchPartyDto`, `WatchPartyDetailDto`.
 
@@ -191,6 +199,28 @@ Vi använder `ErrorOr` Result-mönstret för förväntade applikationsfel — in
 - Implementera pipeline behaviours i MediatR för cross-cutting concerns.
 - `LoggingBehaviour<,>` och `ValidationBehaviour<,>` ska finnas registrerade.
 - Behaviours registreras i `DependencyInjection.cs` i Application-lagret som `IPipelineBehavior<,>`.
+
+## Applikationsservices
+
+För domänlogik som spänner över flera repositories (t.ex. match-detektering) eller delas mellan flera handlers, skapa en applikationsservice under `CineMatch.Application/Services/`:
+
+- Interfacet ligger i `Application/Interfaces/Services/I{Name}Service.cs`.
+- Implementationen ligger i `Application/Services/{Name}Service.cs` — i Application-lagret, inte Infrastructure, eftersom servicen inte har externa beroenden utan bara domänlogik ovanpå repositories.
+- Servicen sparar inte själv. `SaveChangesAsync` ägs av handlern som anropar den; servicen returnerar entiteter eller resultat som handlern persisterar i samma transaktion.
+- Registreras i `Application/DependencyInjection.cs`.
+
+Externa tjänster (TMDB, JWT, BCrypt) ligger däremot i `Infrastructure/Services/` eftersom de har externa beroenden.
+
+## Externa tjänster (HTTP-integration)
+
+- Externa API-anrop sker via typed `HttpClient` registrerade i `Infrastructure/DependencyInjection.cs`:
+  ```csharp
+  services.AddHttpClient<ITmdbService, TmdbService>(client =>
+      client.BaseAddress = new Uri(tmdbSettings.BaseUrl));
+  ```
+- Interfacet definieras i Application-lagret (`Interfaces/Services/`), implementationen ligger i Infrastructure (`Services/`).
+- Konfiguration läses via strongly-typed settings (`IOptions<TmdbSettings>`) med samma mönster som `JwtSettings`. Hemligheter (API-nycklar, tokens) sätts via `dotnet user-secrets`, aldrig hårdkodat eller committat.
+- Externa anrop ska kunna mockas i tester. Mocka `HttpMessageHandler` (via NSubstitute eller en `TestHttpMessageHandler`-helper) — slå aldrig mot riktiga externa tjänster i tester.
 
 ## Authentication och Authorization
 
