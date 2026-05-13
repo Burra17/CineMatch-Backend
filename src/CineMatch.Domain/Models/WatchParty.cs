@@ -19,4 +19,5 @@ public class WatchParty
     public User Host { get; set; } = null!;
     public ICollection<PartyMember> PartyMembers { get; set; } = new List<PartyMember>();
     public ICollection<WatchPartyMovie> WatchPartyMovies { get; set; } = new List<WatchPartyMovie>();
+    public ICollection<Swipe> Swipes { get; set; } = new List<Swipe>();
 }
