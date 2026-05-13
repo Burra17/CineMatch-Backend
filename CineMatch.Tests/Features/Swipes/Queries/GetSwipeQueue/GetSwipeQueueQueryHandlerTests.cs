@@ -71,6 +71,20 @@ public class GetSwipeQueueQueryHandlerTests
     }
 
     [Test]
+    public async Task Handle_UnauthenticatedUser_ReturnsUnauthorizedError()
+    {
+        // Arrange
+        _currentUserServiceMock.UserId.Returns((Guid?)null);
+
+        // Act
+        var result = await _handler.Handle(new GetSwipeQueueQuery(PartyId), CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.True);
+        Assert.That(result.FirstError, Is.EqualTo(SwipeErrors.Unauthorized));
+    }
+
+    [Test]
     public async Task Handle_NotMember_ReturnsForbidden()
     {
         // Arrange
