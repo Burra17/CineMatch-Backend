@@ -1,4 +1,4 @@
-# Kodregler och projektstandard - CineMatch Backend
+﻿# Kodregler och projektstandard - CineMatch Backend
 
 Detta dokument beskriver de kodregler, konventioner och standarder som gäller för backend-delen av CineMatch (.NET 10 Web API). Alla i gruppen förväntas följa dessa regler för att hålla en hög och konsekvent kodkvalitet.
 
@@ -138,6 +138,10 @@ CineMatch.Application/
       IWatchPartyRepository.cs
       IPartyMemberRepository.cs
       IMovieRepository.cs
+      ISwipeRepository.cs
+      IMatchRepository.cs
+      IWatchPartyMovieRepository.cs
+      IPasswordResetTokenRepository.cs
     Services/
       ICurrentUserService.cs
       IJwtService.cs
@@ -238,7 +242,7 @@ Externa tjänster (TMDB, JWT, BCrypt) ligger däremot i `Infrastructure/Services
 - Använd NUnit (`[Test]`, `[SetUp]`, `[OneTimeSetUp]`, `Assert.That(...)`).
 - Namnge tester enligt mönstret `MethodName_Scenario_ExpectedResult`, t.ex. `Handle_ValidCommand_ReturnsUserId`.
 - Varje test ska vara oberoende och kunna köras i valfri ordning.
-- Mocka repositories och externa tjänster (t.ex. TMDB). Mocking-bibliotek (Moq rekommenderas) läggs till när det behövs.
+- Mocka repositories och externa tjänster (t.ex. TMDB). NSubstitute används för mocking.
 - Sträva efter att alla CRUD-flöden för alla entiteter har tester (VG-krav).
 
 ## Dependency Injection
@@ -291,7 +295,7 @@ Repot ska ha en README som innehåller:
 ### Diagram
 
 - UML Class Diagram ska finnas i `/docs/uml-class-diagram.png` (eller `.md` om Mermaid används).
-- User Flow Diagram ska finnas i `/docs/user-flow-diagram.png` (eller `.md` om Mermaid används).
+- User Flow Diagram ska finnas i `docs/userFlow-diagram.md`.
 - Båda diagrammen ska länkas från README.
 
 ## Code Review
