@@ -18,4 +18,5 @@ public class Movie
     // Navigation properties
     public ICollection<WatchPartyMovie> WatchPartyMovies { get; set; } = new List<WatchPartyMovie>();
     public ICollection<Swipe> Swipes { get; set; } = new List<Swipe>();
+    public ICollection<Match> Matches { get; set; } = new List<Match>();
 }

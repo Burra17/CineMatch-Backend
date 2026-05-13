@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<WatchPartyMovie> WatchPartyMovies => Set<WatchPartyMovie>();
     public DbSet<Swipe> Swipes => Set<Swipe>();
+    public DbSet<Match> Matches => Set<Match>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

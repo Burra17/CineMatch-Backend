@@ -20,4 +20,5 @@ public class WatchParty
     public ICollection<PartyMember> PartyMembers { get; set; } = new List<PartyMember>();
     public ICollection<WatchPartyMovie> WatchPartyMovies { get; set; } = new List<WatchPartyMovie>();
     public ICollection<Swipe> Swipes { get; set; } = new List<Swipe>();
+    public ICollection<Match> Matches { get; set; } = new List<Match>();
 }

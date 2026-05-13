@@ -21,4 +21,5 @@ public class User
     // Navigation properties
     public ICollection<WatchParty> WatchPartiesHosted { get; set; } = new List<WatchParty>();
     public ICollection<PartyMember> PartyMemberships { get; set; } = new List<PartyMember>();
+    public ICollection<Match> WatchedMatches { get; set; } = new List<Match>();
 }
