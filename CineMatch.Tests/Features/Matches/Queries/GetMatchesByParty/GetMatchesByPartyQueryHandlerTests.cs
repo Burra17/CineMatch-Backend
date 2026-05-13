@@ -57,6 +57,20 @@ public class GetMatchesByPartyQueryHandlerTests
     }
 
     [Test]
+    public async Task Handle_UnauthenticatedUser_ReturnsUnauthorizedError()
+    {
+        // Arrange
+        _currentUserServiceMock.UserId.Returns((Guid?)null);
+
+        // Act
+        var result = await _handler.Handle(new GetMatchesByPartyQuery(PartyId), CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.True);
+        Assert.That(result.FirstError, Is.EqualTo(MatchErrors.Unauthorized));
+    }
+
+    [Test]
     public async Task Handle_NotMember_ReturnsForbidden()
     {
         // Arrange

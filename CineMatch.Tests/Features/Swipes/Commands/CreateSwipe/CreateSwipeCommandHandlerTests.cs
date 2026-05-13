@@ -86,6 +86,21 @@ public class CreateSwipeCommandHandlerTests
     }
 
     [Test]
+    public async Task Handle_UnauthenticatedUser_ReturnsUnauthorizedError()
+    {
+        // Arrange
+        _currentUserServiceMock.UserId.Returns((Guid?)null);
+
+        // Act
+        var result = await _handler.Handle(new CreateSwipeCommand(PartyId, MovieId, true), CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.True);
+        Assert.That(result.FirstError, Is.EqualTo(SwipeErrors.Unauthorized));
+        await _unitOfWorkMock.DidNotReceive().SaveChangesAsync();
+    }
+
+    [Test]
     public async Task Handle_NotMemberOfParty_ReturnsForbiddenError()
     {
         // Arrange

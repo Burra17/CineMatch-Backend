@@ -70,6 +70,38 @@ public class MarkMatchAsWatchedCommandHandlerTests
     }
 
     [Test]
+    public async Task Handle_UnauthenticatedUser_ReturnsUnauthorizedError()
+    {
+        // Arrange
+        _currentUserServiceMock.UserId.Returns((Guid?)null);
+
+        // Act
+        var result = await _handler.Handle(new MarkMatchAsWatchedCommand(MatchId), CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.True);
+        Assert.That(result.FirstError, Is.EqualTo(MatchErrors.Unauthorized));
+        await _unitOfWorkMock.DidNotReceive().SaveChangesAsync();
+    }
+
+    [Test]
+    public async Task Handle_NotMemberOfParty_ReturnsForbiddenError()
+    {
+        // Arrange — match exists but user is not an active member of that party
+        _partyMemberRepositoryMock
+            .GetMembershipAsync(UserId, PartyId, Arg.Any<CancellationToken>())
+            .Returns((PartyMember?)null);
+
+        // Act
+        var result = await _handler.Handle(new MarkMatchAsWatchedCommand(MatchId), CancellationToken.None);
+
+        // Assert
+        Assert.That(result.IsError, Is.True);
+        Assert.That(result.FirstError, Is.EqualTo(MatchErrors.NotMemberOfParty));
+        await _unitOfWorkMock.DidNotReceive().SaveChangesAsync();
+    }
+
+    [Test]
     public async Task Handle_MatchNotFound_ReturnsNotFound()
     {
         // Arrange
