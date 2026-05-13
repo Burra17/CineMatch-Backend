@@ -22,4 +22,5 @@ public class User
     public ICollection<WatchParty> WatchPartiesHosted { get; set; } = new List<WatchParty>();
     public ICollection<PartyMember> PartyMemberships { get; set; } = new List<PartyMember>();
     public ICollection<Match> WatchedMatches { get; set; } = new List<Match>();
+    public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 }
