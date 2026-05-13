@@ -37,7 +37,7 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         if (resetToken is null || resetToken.ExpiresAt < DateTime.UtcNow || resetToken.IsUsed)
             return PasswordResetErrors.InvalidOrExpiredToken;
 
-        var user = await _userRepository.GetByIdAsync(resetToken.UserId);
+        var user = await _userRepository.GetByIdAsync(resetToken.UserId, cancellationToken);
         if (user is null)
             return PasswordResetErrors.InvalidOrExpiredToken;
 

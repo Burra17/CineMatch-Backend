@@ -33,7 +33,7 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, E
             return UserErrors.InvalidCredentials;
         }
 
-        var user = await _userRepository.GetByIdAsync(userId.Value);
+        var user = await _userRepository.GetByIdAsync(userId.Value, cancellationToken);
 
         // The JWT was valid but the user record is gone (account deleted after the token was issued).
         // Returning NotFound rather than Unauthorized is intentional — the token itself is still cryptographically valid.
