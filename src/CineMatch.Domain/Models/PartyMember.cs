@@ -17,4 +17,5 @@ public class PartyMember
     // Navigation properties
     public User User { get; set; } = null!;
     public WatchParty WatchParty { get; set; } = null!;
+    public ICollection<Swipe> Swipes { get; set; } = new List<Swipe>();
 }
