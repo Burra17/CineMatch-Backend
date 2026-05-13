@@ -19,6 +19,12 @@ public class WatchPartyMovieRepository : GenericRepository<WatchPartyMovie>, IWa
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<bool> ExistsInPartyAsync(Guid watchPartyId, Guid movieId, CancellationToken cancellationToken)
+    {
+        return await _context.WatchPartyMovies
+            .AnyAsync(wpm => wpm.WatchPartyId == watchPartyId && wpm.MovieId == movieId, cancellationToken);
+    }
+
     public async Task AddRangeAsync(IEnumerable<WatchPartyMovie> watchPartyMovies, CancellationToken cancellationToken)
     {
         await _context.WatchPartyMovies.AddRangeAsync(watchPartyMovies, cancellationToken);

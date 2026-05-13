@@ -16,6 +16,7 @@ public class CreateSwipeCommandHandlerTests
     private IPartyMemberRepository _partyMemberRepositoryMock;
     private ISwipeRepository _swipeRepositoryMock;
     private IWatchPartyMovieRepository _watchPartyMovieRepositoryMock;
+    private IMovieRepository _movieRepositoryMock;
     private IMatchRepository _matchRepositoryMock;
     private IMatchDetectionService _matchDetectionServiceMock;
     private IUnitOfWork _unitOfWorkMock;
@@ -48,6 +49,7 @@ public class CreateSwipeCommandHandlerTests
         _partyMemberRepositoryMock = Substitute.For<IPartyMemberRepository>();
         _swipeRepositoryMock = Substitute.For<ISwipeRepository>();
         _watchPartyMovieRepositoryMock = Substitute.For<IWatchPartyMovieRepository>();
+        _movieRepositoryMock = Substitute.For<IMovieRepository>();
         _matchRepositoryMock = Substitute.For<IMatchRepository>();
         _matchDetectionServiceMock = Substitute.For<IMatchDetectionService>();
         _unitOfWorkMock = Substitute.For<IUnitOfWork>();
@@ -62,8 +64,11 @@ public class CreateSwipeCommandHandlerTests
             .GetByPartyMemberAndMovieAsync(ActiveMember.Id, MovieId, Arg.Any<CancellationToken>())
             .Returns((Swipe?)null);
         _watchPartyMovieRepositoryMock
-            .GetMoviesForPartyAsync(PartyId, Arg.Any<CancellationToken>())
-            .Returns(new List<Movie> { TheMovie });
+            .ExistsInPartyAsync(PartyId, MovieId, Arg.Any<CancellationToken>())
+            .Returns(true);
+        _movieRepositoryMock
+            .GetByIdAsync(MovieId)
+            .Returns(TheMovie);
         _matchDetectionServiceMock
             .DetectMatchAsync(PartyId, MovieId, Arg.Any<CancellationToken>())
             .Returns((Match?)null);
@@ -73,6 +78,7 @@ public class CreateSwipeCommandHandlerTests
             _partyMemberRepositoryMock,
             _swipeRepositoryMock,
             _watchPartyMovieRepositoryMock,
+            _movieRepositoryMock,
             _matchRepositoryMock,
             _matchDetectionServiceMock,
             _unitOfWorkMock,
@@ -116,10 +122,10 @@ public class CreateSwipeCommandHandlerTests
     [Test]
     public async Task Handle_MovieNotInParty_ReturnsValidationError()
     {
-        // Arrange — party has no movies matching the requested MovieId
+        // Arrange — movie does not exist in this party
         _watchPartyMovieRepositoryMock
-            .GetMoviesForPartyAsync(PartyId, Arg.Any<CancellationToken>())
-            .Returns(new List<Movie>());
+            .ExistsInPartyAsync(PartyId, MovieId, Arg.Any<CancellationToken>())
+            .Returns(false);
 
         // Act
         var result = await _handler.Handle(new CreateSwipeCommand(PartyId, MovieId, true), CancellationToken.None);
