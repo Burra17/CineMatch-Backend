@@ -12,8 +12,10 @@ internal class PasswordResetTokenConfiguration : IEntityTypeConfiguration<Passwo
 
         builder.HasKey(t => t.Id);
 
+        // SHA-256 hex strings are always exactly 64 characters.
         builder.Property(t => t.TokenHash)
-            .IsRequired();
+            .IsRequired()
+            .HasMaxLength(64);
 
         builder.Property(t => t.ExpiresAt)
             .IsRequired();
