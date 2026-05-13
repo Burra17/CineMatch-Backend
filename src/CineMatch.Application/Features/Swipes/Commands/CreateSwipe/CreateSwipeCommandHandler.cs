@@ -15,6 +15,7 @@ public class CreateSwipeCommandHandler : IRequestHandler<CreateSwipeCommand, Err
     private readonly IPartyMemberRepository _partyMemberRepository;
     private readonly ISwipeRepository _swipeRepository;
     private readonly IWatchPartyMovieRepository _watchPartyMovieRepository;
+    private readonly IMovieRepository _movieRepository;
     private readonly IMatchRepository _matchRepository;
     private readonly IMatchDetectionService _matchDetectionService;
     private readonly IUnitOfWork _unitOfWork;
@@ -25,6 +26,7 @@ public class CreateSwipeCommandHandler : IRequestHandler<CreateSwipeCommand, Err
         IPartyMemberRepository partyMemberRepository,
         ISwipeRepository swipeRepository,
         IWatchPartyMovieRepository watchPartyMovieRepository,
+        IMovieRepository movieRepository,
         IMatchRepository matchRepository,
         IMatchDetectionService matchDetectionService,
         IUnitOfWork unitOfWork,
@@ -34,6 +36,7 @@ public class CreateSwipeCommandHandler : IRequestHandler<CreateSwipeCommand, Err
         _partyMemberRepository = partyMemberRepository;
         _swipeRepository = swipeRepository;
         _watchPartyMovieRepository = watchPartyMovieRepository;
+        _movieRepository = movieRepository;
         _matchRepository = matchRepository;
         _matchDetectionService = matchDetectionService;
         _unitOfWork = unitOfWork;
@@ -54,9 +57,8 @@ public class CreateSwipeCommandHandler : IRequestHandler<CreateSwipeCommand, Err
         if (existingSwipe is not null)
             return SwipeErrors.AlreadySwiped;
 
-        var partyMovies = await _watchPartyMovieRepository.GetMoviesForPartyAsync(request.WatchPartyId, cancellationToken);
-        var movie = partyMovies.FirstOrDefault(m => m.Id == request.MovieId);
-        if (movie is null)
+        var movieInParty = await _watchPartyMovieRepository.ExistsInPartyAsync(request.WatchPartyId, request.MovieId, cancellationToken);
+        if (!movieInParty)
             return SwipeErrors.MovieNotInParty;
 
         var swipe = new Swipe
@@ -80,7 +82,13 @@ public class CreateSwipeCommandHandler : IRequestHandler<CreateSwipeCommand, Err
 
         await _unitOfWork.SaveChangesAsync();
 
-        var matchedMovieDto = match is not null ? _mapper.Map<MovieDto>(movie) : null;
+        MovieDto? matchedMovieDto = null;
+        if (match is not null)
+        {
+            var movie = await _movieRepository.GetByIdAsync(request.MovieId);
+            matchedMovieDto = _mapper.Map<MovieDto>(movie);
+        }
+
         return new SwipeResultDto(IsMatch: match is not null, MatchedMovie: matchedMovieDto);
     }
 }
