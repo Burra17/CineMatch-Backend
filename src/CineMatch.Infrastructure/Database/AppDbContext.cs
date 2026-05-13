@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<WatchPartyMovie> WatchPartyMovies => Set<WatchPartyMovie>();
     public DbSet<Swipe> Swipes => Set<Swipe>();
     public DbSet<Match> Matches => Set<Match>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
