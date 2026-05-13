@@ -37,9 +37,34 @@ public static class DependencyInjection
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
 
+        AddTmdbHttpClient(services, configuration);
         AddJwtAuthentication(services, configuration);
 
         return services;
+    }
+
+    private static void AddTmdbHttpClient(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<TmdbSettings>(configuration.GetSection(TmdbSettings.SectionName));
+
+        var tmdbSettings = configuration
+            .GetSection(TmdbSettings.SectionName)
+            .Get<TmdbSettings>()
+            ?? throw new InvalidOperationException("TmdbSettings is not configured.");
+
+        if (string.IsNullOrWhiteSpace(tmdbSettings.ApiKey))
+        {
+            throw new InvalidOperationException(
+                "TmdbSettings:ApiKey is required. " +
+                "Set it via user secrets: dotnet user-secrets set \"Tmdb:ApiKey\" \"<your-key>\"");
+        }
+
+        services.AddHttpClient<ITmdbService, TmdbService>(client =>
+        {
+            client.BaseAddress = new Uri(tmdbSettings.BaseUrl);
+        });
     }
 
     private static void AddJwtAuthentication(

@@ -6,6 +6,19 @@ scalar för api documentation https://localhost:7179/scalar/
 
 [Klicka här för att se vårt UML Class Diagram](docs/uml-class-diagram.md)
 
+## Local Setup
+
+### User Secrets
+
+The application requires secrets that are not stored in source control. Set them via the .NET user-secrets tool from the `src/CineMatch.API` directory:
+
+```bash
+dotnet user-secrets set "JwtSettings:Secret" "<your-jwt-secret-min-32-chars>"
+dotnet user-secrets set "Tmdb:ApiKey" "<your-tmdb-api-key>"
+```
+
+You can obtain a free TMDB API key at [themoviedb.org](https://www.themoviedb.org/settings/api).
+
 ## Build & Test (CI)
 
 Build och tester körs automatiskt av GitHub Actions via `.github/workflows/build-and-test.yml`.
