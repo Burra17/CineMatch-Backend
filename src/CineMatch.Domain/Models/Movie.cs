@@ -14,4 +14,7 @@ public class Movie
 
     // State
     public DateTime CachedAt { get; init; } = DateTime.UtcNow;
+
+    // Navigation properties
+    public ICollection<WatchPartyMovie> WatchPartyMovies { get; set; } = new List<WatchPartyMovie>();
 }

@@ -18,4 +18,5 @@ public class WatchParty
     // Navigation properties
     public User Host { get; set; } = null!;
     public ICollection<PartyMember> PartyMembers { get; set; } = new List<PartyMember>();
+    public ICollection<WatchPartyMovie> WatchPartyMovies { get; set; } = new List<WatchPartyMovie>();
 }

@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<WatchParty> WatchParties => Set<WatchParty>();
     public DbSet<PartyMember> PartyMembers => Set<PartyMember>();
     public DbSet<Movie> Movies => Set<Movie>();
+    public DbSet<WatchPartyMovie> WatchPartyMovies => Set<WatchPartyMovie>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
