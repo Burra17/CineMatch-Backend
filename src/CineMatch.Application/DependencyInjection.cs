@@ -1,4 +1,6 @@
 using CineMatch.Application.Common.Behaviours;
+using CineMatch.Application.Interfaces.Services;
+using CineMatch.Application.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +21,9 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
         services.AddAutoMapper(cfg => cfg.AddMaps(typeof(DependencyInjection).Assembly));
+
+        services.AddScoped<IMatchDetectionService, MatchDetectionService>();
+
         return services;
     }
 }
