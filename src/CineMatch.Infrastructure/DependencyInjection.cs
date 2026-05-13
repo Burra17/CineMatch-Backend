@@ -28,6 +28,9 @@ public static class DependencyInjection
         services.AddScoped<IWatchPartyRepository, WatchPartyRepository>();
         services.AddScoped<IPartyMemberRepository, PartyMemberRepository>();
         services.AddScoped<IMovieRepository, MovieRepository>();
+        services.AddScoped<ISwipeRepository, SwipeRepository>();
+        services.AddScoped<IMatchRepository, MatchRepository>();
+        services.AddScoped<IWatchPartyMovieRepository, WatchPartyMovieRepository>();
 
         // Services
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
