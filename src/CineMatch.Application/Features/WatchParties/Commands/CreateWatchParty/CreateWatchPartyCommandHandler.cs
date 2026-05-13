@@ -95,19 +95,13 @@ public class CreateWatchPartyCommandHandler : IRequestHandler<CreateWatchPartyCo
         if (tmdbMovies.Count < MoviesPerParty)
             _logger.LogWarning("TMDB returned {Actual} movies, fewer than the requested {Count}.", tmdbMovies.Count, MoviesPerParty);
 
-        var resolvedMovies = new List<Movie>(tmdbMovies.Count);
-        var newMovies = new List<Movie>();
+        var tmdbIds = tmdbMovies.Select(m => m.TmdbId).ToList();
+        var existingMovies = await _movieRepository.GetExistingByTmdbIdsAsync(tmdbIds, cancellationToken);
+        var existingById = existingMovies.ToDictionary(m => m.TmdbId);
 
-        foreach (var dto in tmdbMovies)
-        {
-            var existing = await _movieRepository.GetByTmdbIdAsync(dto.TmdbId, cancellationToken);
-            if (existing is not null)
-            {
-                resolvedMovies.Add(existing);
-                continue;
-            }
-
-            var movie = new Movie
+        var newMovies = tmdbMovies
+            .Where(dto => !existingById.ContainsKey(dto.TmdbId))
+            .Select(dto => new Movie
             {
                 Id = Guid.NewGuid(),
                 TmdbId = dto.TmdbId,
@@ -116,20 +110,22 @@ public class CreateWatchPartyCommandHandler : IRequestHandler<CreateWatchPartyCo
                 Overview = dto.Overview,
                 ReleaseYear = dto.ReleaseYear,
                 CachedAt = DateTime.UtcNow
-            };
-            newMovies.Add(movie);
-            resolvedMovies.Add(movie);
-        }
+            })
+            .ToList();
 
         if (newMovies.Count > 0)
             await _movieRepository.BulkInsertAsync(newMovies, cancellationToken);
 
-        var watchPartyMovies = resolvedMovies
-            .Select((movie, index) => new WatchPartyMovie
+        var allMoviesById = existingById;
+        foreach (var movie in newMovies)
+            allMoviesById[movie.TmdbId] = movie;
+
+        var watchPartyMovies = tmdbMovies
+            .Select((dto, index) => new WatchPartyMovie
             {
                 Id = Guid.NewGuid(),
                 WatchPartyId = watchPartyId,
-                MovieId = movie.Id,
+                MovieId = allMoviesById[dto.TmdbId].Id,
                 OrderIndex = index,
                 AddedAt = DateTime.UtcNow
             })

@@ -50,8 +50,8 @@ namespace CineMatch.Tests.Features.WatchParties.Commands.CreateWatchParty
                 .GetMoviesByGenreAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
                 .Returns(ThreeDummyMovies);
             _movieRepositoryMock
-                .GetByTmdbIdAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
-                .Returns((Movie?)null);
+                .GetExistingByTmdbIdsAsync(Arg.Any<IEnumerable<int>>(), Arg.Any<CancellationToken>())
+                .Returns(new List<Movie>());
 
             _handler = new CreateWatchPartyCommandHandler(
                 _currentUserServiceMock,
@@ -174,9 +174,9 @@ namespace CineMatch.Tests.Features.WatchParties.Commands.CreateWatchParty
                 .GetByIdWithMembersAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                 .Returns(new WatchParty());
 
-            _movieRepositoryMock.GetByTmdbIdAsync(100, Arg.Any<CancellationToken>()).Returns(existingMovieA);
-            _movieRepositoryMock.GetByTmdbIdAsync(200, Arg.Any<CancellationToken>()).Returns(existingMovieB);
-            _movieRepositoryMock.GetByTmdbIdAsync(300, Arg.Any<CancellationToken>()).Returns((Movie?)null);
+            _movieRepositoryMock
+                .GetExistingByTmdbIdsAsync(Arg.Any<IEnumerable<int>>(), Arg.Any<CancellationToken>())
+                .Returns(new List<Movie> { existingMovieA, existingMovieB });
 
             // Act
             await _handler.Handle(new CreateWatchPartyCommand(), CancellationToken.None);
