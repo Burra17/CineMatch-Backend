@@ -46,7 +46,7 @@ public class RequestPasswordResetCommandHandler : IRequestHandler<RequestPasswor
             CreatedAt = DateTime.UtcNow
         };
 
-        await _passwordResetTokenRepository.AddAsync(resetToken);
+        await _passwordResetTokenRepository.AddAsync(resetToken, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         return rawToken;

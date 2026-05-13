@@ -36,7 +36,7 @@ public class MarkMatchAsWatchedCommandHandler : IRequestHandler<MarkMatchAsWatch
         if (userId is null)
             return MatchErrors.Unauthorized;
 
-        var match = await _matchRepository.GetByIdAsync(request.MatchId);
+        var match = await _matchRepository.GetByIdAsync(request.MatchId, cancellationToken);
         if (match is null)
             return MatchErrors.NotFound;
 

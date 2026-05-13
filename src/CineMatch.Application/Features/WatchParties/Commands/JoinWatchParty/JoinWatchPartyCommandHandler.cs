@@ -71,7 +71,7 @@ public class JoinWatchPartyCommandHandler : IRequestHandler<JoinWatchPartyComman
                 JoinedAt = DateTime.UtcNow,
                 IsActive = true
             };
-            await _partyMemberRepository.AddAsync(newMember);
+            await _partyMemberRepository.AddAsync(newMember, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 

@@ -55,7 +55,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, E
             CreatedAt = DateTime.UtcNow
         };
 
-        await _userRepository.AddAsync(user);
+        await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync();
 
         return _mapper.Map<UserDto>(user);

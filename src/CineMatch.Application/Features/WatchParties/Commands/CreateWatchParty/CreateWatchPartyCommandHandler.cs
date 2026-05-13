@@ -78,7 +78,7 @@ public class CreateWatchPartyCommandHandler : IRequestHandler<CreateWatchPartyCo
         };
 
         watchParty.PartyMembers.Add(partyMember);
-        await _watchPartyRepository.AddAsync(watchParty);
+        await _watchPartyRepository.AddAsync(watchParty, cancellationToken);
 
         await FetchAndStageMoviesAsync(watchParty.Id, cancellationToken);
 
