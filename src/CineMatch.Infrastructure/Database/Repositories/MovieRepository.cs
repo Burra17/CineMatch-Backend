@@ -15,6 +15,13 @@ public class MovieRepository : GenericRepository<Movie>, IMovieRepository
         return await _context.Movies.FirstOrDefaultAsync(m => m.TmdbId == tmdbId, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Movie>> GetExistingByTmdbIdsAsync(IEnumerable<int> tmdbIds, CancellationToken cancellationToken)
+    {
+        return await _context.Movies
+            .Where(m => tmdbIds.Contains(m.TmdbId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task BulkInsertAsync(IEnumerable<Movie> movies, CancellationToken cancellationToken)
     {
         await _context.Movies.AddRangeAsync(movies, cancellationToken);
