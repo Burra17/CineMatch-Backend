@@ -2,7 +2,6 @@
 using ErrorOr;
 using MediatR;
 
-namespace CineMatch.Application.Features.Users.Commands.LoginUser
-{
-    public record LoginUserCommand(string Email, string Password) : IRequest<ErrorOr<LoginResponseDto>>;
-}
+namespace CineMatch.Application.Features.Users.Commands.LoginUser;
+
+public record LoginUserCommand(string Email, string Password) : IRequest<ErrorOr<LoginResponseDto>>;

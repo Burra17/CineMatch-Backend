@@ -1,23 +1,21 @@
-﻿namespace CineMatch.Domain.Models
+﻿namespace CineMatch.Domain.Models;
+
+public class WatchParty
 {
-    public class WatchParty
-    {
-        // Identity
-        public Guid Id { get; init; }
-        public string JoinCode { get; set; } = string.Empty;
+    // Identity
+    public Guid Id { get; init; }
+    public string JoinCode { get; set; } = string.Empty;
 
-        // Configuration
-        public Guid HostId { get; set; }
-        // Sätts till popular eller nåt i början, vi kan lägga till fler om vi har tid
-        public string Genre { get; set; } = "popular";
+    // Configuration
+    public Guid HostId { get; set; }
+    public string Genre { get; set; } = "popular";
 
-        // State
-        public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
-        public DateTime? ClosedAt { get; set; } 
+    // State
+    public bool IsActive { get; set; } = true;
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime? ClosedAt { get; set; }
 
-        // Navigation properties
-        public User Host { get; set; } = null!;
-        public ICollection<PartyMember> PartyMembers { get; set; } = new List<PartyMember>();
-    }
+    // Navigation properties
+    public User Host { get; set; } = null!;
+    public ICollection<PartyMember> PartyMembers { get; set; } = new List<PartyMember>();
 }

@@ -1,6 +1,6 @@
 using CineMatch.Domain.Models;
 
-namespace CineMatch.Application.Interfaces;
+namespace CineMatch.Application.Interfaces.Repositories;
 
 public interface IUserRepository : IGenericRepository<User>
 {

@@ -1,9 +1,11 @@
-﻿using ErrorOr;
+using ErrorOr;
 using FluentValidation;
 using MediatR;
 
 namespace CineMatch.Application.Common.Behaviours;
 
+// Runs FluentValidation against the request before the handler. Constrained to IErrorOr responses
+// so failures can be returned as Error.Validation values instead of throwing exceptions.
 public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
     where TResponse : IErrorOr
@@ -44,6 +46,8 @@ public class ValidationBehaviour<TRequest, TResponse> : IPipelineBehavior<TReque
             return await next();
         }
 
+        // ErrorOr<T> has an implicit conversion from List<Error>; the dynamic cast lets us return
+        // validation errors through any concrete ErrorOr<T> response type without knowing T at compile time.
         return (TResponse)(dynamic)errors;
     }
 }

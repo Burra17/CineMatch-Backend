@@ -2,7 +2,8 @@ using AutoMapper;
 using CineMatch.Application.Features.WatchParties.Common.Dtos;
 using CineMatch.Application.Features.WatchParties.Common.Errors;
 using CineMatch.Application.Features.WatchParties.Queries.GetWatchPartyDetails;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
+using CineMatch.Application.Interfaces.Services;
 using CineMatch.Domain.Models;
 using NSubstitute;
 

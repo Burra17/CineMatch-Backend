@@ -1,4 +1,4 @@
-﻿using CineMatch.Domain.Models;
+using CineMatch.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -29,12 +29,13 @@ internal class WatchPartyConfiguration : IEntityTypeConfiguration<WatchParty>
         builder.Property(wp => wp.ClosedAt)
             .IsRequired(false);
 
-        // Filtered unique index på JoinCode — bara unik bland aktiva parties
+        // Filtered unique index — JoinCode only needs to be unique among active parties,
+        // which lets inactive parties' codes be reused for new ones.
         builder.HasIndex(wp => wp.JoinCode)
             .IsUnique()
             .HasFilter("\"IsActive\" = true");
 
-        // Relation till Host (User) via HostId
+        // Restrict deletion of a user who still hosts parties — would otherwise orphan them.
         builder.HasOne(wp => wp.Host)
             .WithMany(u => u.WatchPartiesHosted)
             .HasForeignKey(wp => wp.HostId)

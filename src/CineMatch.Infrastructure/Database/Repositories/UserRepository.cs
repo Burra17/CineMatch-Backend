@@ -1,5 +1,5 @@
 using CineMatch.Domain.Models;
-using CineMatch.Application.Interfaces;
+using CineMatch.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -7,10 +7,8 @@ namespace CineMatch.Infrastructure.Database.Repositories;
 
 public class UserRepository : GenericRepository<User>, IUserRepository
 {
-
     public UserRepository(AppDbContext context) : base(context)
     {
-        
     }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken)

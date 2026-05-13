@@ -4,6 +4,8 @@ using CineMatch.Domain.Models;
 
 namespace CineMatch.Application.Features.WatchParties.Common.Mappings;
 
+// DTOs are positional records (init-only constructor parameters), so ForCtorParam is required —
+// ForMember would only run after construction and AutoMapper would fail to find a parameterless constructor.
 public class WatchPartyMappingProfile : Profile
 {
     public WatchPartyMappingProfile()
