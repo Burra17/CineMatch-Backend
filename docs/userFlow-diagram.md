@@ -32,7 +32,7 @@ flowchart TD
     U --> T
     T -- Ja --> V[Starta swipe-session]
 
-    V --> W[Hämta filmer]
+    V --> W[Hämta filmer från party (cachat vid skapande)]
     W --> X{Filmer tillgängliga?}
     X -- Nej --> Y[Fel: inga fler filmer]
     X -- Ja --> Z[Visa filmkort]
