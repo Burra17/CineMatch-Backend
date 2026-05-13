@@ -10,7 +10,7 @@ Detta dokument samlar **allt som återstår i backend-repot** så hela teamet se
 | Sprint 2 | ✅ Klar | Auth-flöden (Register, Login, GetCurrentUser), pipeline behaviours, tester |
 | Sprint 3 | ✅ Klar | WatchParty, PartyMember, Movie, JoinCodeGenerator, soft delete |
 | **Sprint 4** | ✅ Klar | TMDB-integration + Swipe + Match |
-| Sprint 5 | ⏳ Återstår | Password reset + polish + tester för VG |
+| **Sprint 5** | ✅ Klar | Password reset + polish + tester för VG |
 | Sprint 6 | ⏳ Frontend | Egen repo (React) — startar när backend är klar |
 
 ---
