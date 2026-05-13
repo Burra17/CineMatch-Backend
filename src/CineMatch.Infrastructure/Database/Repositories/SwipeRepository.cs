@@ -19,7 +19,10 @@ public class SwipeRepository : GenericRepository<Swipe>, ISwipeRepository
     public async Task<int> GetLikesForMovieInPartyAsync(Guid watchPartyId, Guid movieId, CancellationToken cancellationToken)
     {
         return await _context.Swipes
-            .CountAsync(s => s.WatchPartyId == watchPartyId && s.MovieId == movieId && s.IsLiked, cancellationToken);
+            .CountAsync(s => s.WatchPartyId == watchPartyId
+                && s.MovieId == movieId
+                && s.IsLiked
+                && s.PartyMember.IsActive, cancellationToken);
     }
 
     public async Task<IReadOnlyList<Guid>> GetSwipedMovieIdsForMemberAsync(Guid partyMemberId, CancellationToken cancellationToken)
