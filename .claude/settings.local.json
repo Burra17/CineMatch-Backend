@@ -13,7 +13,11 @@
       "Bash(git push *)",
       "Bash(dotnet build *)",
       "Bash(git rebase *)",
-      "Bash(GIT_EDITOR=true git rebase *)"
+      "Bash(GIT_EDITOR=true git rebase *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\DevSpace\\\\HA\\\\Webbapplikationer\\\\CineMatch-Backend\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(Get-ChildItem -Path \"C:\\\\DevSpace\\\\HA\\\\Webbapplikationer\\\\CineMatch\\\\src\" -Recurse -Include *.jsx, *.js, *.css)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }

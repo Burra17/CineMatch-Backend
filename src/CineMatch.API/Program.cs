@@ -14,6 +14,15 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddOpenApi();
 
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyHeader()
+                      .AllowAnyMethod());
+        });
+
         // Each layer owns its registrations — see Infrastructure.DependencyInjection,
         // Application.DependencyInjection and API.DependencyInjection.
         builder.Services.AddInfrastructure(builder.Configuration);
@@ -30,8 +39,10 @@ public class Program
 
         // Pipeline order matters: exception handler first (so it catches everything below),
         // then auth before authorization. Reordering will silently break error responses or [Authorize] checks.
+        // UseCors must come before UseAuthentication — preflight OPTIONS requests must be handled first.
         app.UseMiddleware<ExceptionHandlingMiddleware>();
         app.UseHttpsRedirection();
+        app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
 
