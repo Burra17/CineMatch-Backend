@@ -14,10 +14,18 @@
       "Bash(dotnet build *)",
       "Bash(git rebase *)",
       "Bash(GIT_EDITOR=true git rebase *)",
-      "Bash(Get-ChildItem -Path \"C:\\\\DevSpace\\\\HA\\\\Webbapplikationer\\\\CineMatch-Backend\" -Directory)",
-      "Bash(Select-Object Name)",
-      "Bash(Get-ChildItem -Path \"C:\\\\DevSpace\\\\HA\\\\Webbapplikationer\\\\CineMatch\\\\src\" -Recurse -Include *.jsx, *.js, *.css)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(git stash *)",
+      "Bash(dotnet user-secrets *)",
+      "Bash(where psql *)",
+      "Read(//e/c/**)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(dotnet test *)",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const p=JSON.parse\\(d\\); p.fields.forEach\\(f=>console.log\\(f.id, f.name, JSON.stringify\\(f.options||''\\)\\)\\)\")",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet restore *)",
+      "Bash(python3 *)"
     ]
   }
 }
