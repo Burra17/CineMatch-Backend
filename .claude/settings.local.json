@@ -13,7 +13,19 @@
       "Bash(git push *)",
       "Bash(dotnet build *)",
       "Bash(git rebase *)",
-      "Bash(GIT_EDITOR=true git rebase *)"
+      "Bash(GIT_EDITOR=true git rebase *)",
+      "Bash(git stash *)",
+      "Bash(dotnet user-secrets *)",
+      "Bash(where psql *)",
+      "Read(//e/c/**)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)",
+      "Bash(dotnet test *)",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const p=JSON.parse\\(d\\); p.fields.forEach\\(f=>console.log\\(f.id, f.name, JSON.stringify\\(f.options||''\\)\\)\\)\")",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet restore *)",
+      "Bash(python3 *)"
     ]
   }
 }
