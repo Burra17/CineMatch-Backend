@@ -90,7 +90,9 @@ public class CreateWatchPartyCommandHandler : IRequestHandler<CreateWatchPartyCo
 
     private async Task FetchAndStageMoviesAsync(Guid watchPartyId, CancellationToken cancellationToken)
     {
-        var tmdbMovies = await _tmdbService.GetMoviesByGenreAsync(DefaultGenre, MoviesPerParty, cancellationToken);
+        var tmdbMovies = (await _tmdbService.GetMoviesByGenreAsync(DefaultGenre, MoviesPerParty, cancellationToken))
+            .DistinctBy(movie => movie.TmdbId)
+            .ToList();
 
         if (tmdbMovies.Count < MoviesPerParty)
             _logger.LogWarning("TMDB returned {Actual} movies, fewer than the requested {Count}.", tmdbMovies.Count, MoviesPerParty);
