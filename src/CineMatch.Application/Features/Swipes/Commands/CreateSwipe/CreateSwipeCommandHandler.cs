@@ -71,16 +71,18 @@ public class CreateSwipeCommandHandler : IRequestHandler<CreateSwipeCommand, Err
             SwipedAt = DateTime.UtcNow
         };
         await _swipeRepository.AddAsync(swipe, cancellationToken);
+        await _unitOfWork.SaveChangesAsync();
 
         Match? match = null;
         if (request.IsLiked)
         {
             match = await _matchDetectionService.DetectMatchAsync(request.WatchPartyId, request.MovieId, cancellationToken);
             if (match is not null)
+            {
                 await _matchRepository.AddAsync(match, cancellationToken);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
-
-        await _unitOfWork.SaveChangesAsync();
 
         MovieDto? matchedMovieDto = null;
         if (match is not null)

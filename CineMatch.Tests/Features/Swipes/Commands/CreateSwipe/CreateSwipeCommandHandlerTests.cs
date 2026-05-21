@@ -189,7 +189,7 @@ public class CreateSwipeCommandHandlerTests
         Assert.That(result.Value.IsMatch, Is.True);
         Assert.That(result.Value.MatchedMovie, Is.EqualTo(expectedMovieDto));
         await _matchRepositoryMock.Received(1).AddAsync(match);
-        await _unitOfWorkMock.Received(1).SaveChangesAsync();
+        await _unitOfWorkMock.Received(2).SaveChangesAsync();
     }
 
     [Test]
