@@ -12,7 +12,9 @@ public class WatchParty
 
     // State
     public bool IsActive { get; set; } = true;
+    public bool IsStarted { get; set; } = false;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime? StartedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
 
     // Navigation properties

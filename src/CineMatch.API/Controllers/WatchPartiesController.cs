@@ -2,6 +2,7 @@
 using CineMatch.Application.Features.WatchParties.Commands.CreateWatchParty;
 using CineMatch.Application.Features.WatchParties.Commands.JoinWatchParty;
 using CineMatch.Application.Features.WatchParties.Commands.LeaveWatchParty;
+using CineMatch.Application.Features.WatchParties.Commands.StartWatchParty;
 using CineMatch.Application.Features.WatchParties.Common.Dtos;
 using CineMatch.Application.Features.WatchParties.Queries.GetWatchPartyDetails;
 using MediatR;
@@ -62,6 +63,21 @@ public class WatchPartiesController : ControllerBase
     public async Task<IActionResult> LeaveWatchParty([FromRoute] Guid id)
     {
         var result = await _mediator.Send(new LeaveWatchPartyCommand(id));
+
+        return result.ToActionResult(this);
+    }
+
+    /// <summary>
+    /// Start a WatchParty session. Only the host can call this.
+    /// </summary>
+    [HttpPost("{id:guid}/start")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> StartWatchParty([FromRoute] Guid id)
+    {
+        var result = await _mediator.Send(new StartWatchPartyCommand(id));
 
         return result.ToActionResult(this);
     }

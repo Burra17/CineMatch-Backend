@@ -49,7 +49,7 @@ namespace CineMatch.Tests.Features.WatchParties.Queries.GetWatchPartyDetails
             };
 
             var expectedDto = new WatchPartyDetailsDto(
-                partyId, "ABC234", "host", "popular", true, DateTime.UtcNow, 1,
+                partyId, "ABC234", "host", "popular", true, false, DateTime.UtcNow, 1,
                 new List<PartyMemberDto>());
 
             _currentUserServiceMock.UserId.Returns(userId);

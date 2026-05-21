@@ -77,6 +77,7 @@ namespace CineMatch.Tests.Features.WatchParties.Commands.CreateWatchParty
                 "testuser",
                 "popular",
                 true,
+                false,
                 DateTime.UtcNow,
                 1);
 

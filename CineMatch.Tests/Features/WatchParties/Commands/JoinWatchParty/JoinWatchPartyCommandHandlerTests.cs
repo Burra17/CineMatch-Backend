@@ -44,7 +44,7 @@ namespace CineMatch.Tests.Features.WatchParties.Commands.JoinWatchParty
             var partyId = Guid.NewGuid();
             var joinCode = "ABC234";
             var party = new WatchParty { Id = partyId, JoinCode = joinCode, IsActive = true };
-            var expectedDto = new WatchPartyDto(partyId, joinCode, "host", "popular", true, DateTime.UtcNow, 2);
+            var expectedDto = new WatchPartyDto(partyId, joinCode, "host", "popular", true, false, DateTime.UtcNow, 2);
 
             // Setup: giltig user, party hittas, ingen tidigare membership → ska skapa ny
             _currentUserServiceMock.UserId.Returns(userId);
@@ -135,7 +135,7 @@ namespace CineMatch.Tests.Features.WatchParties.Commands.JoinWatchParty
                 WatchPartyId = partyId,
                 IsActive = true
             };
-            var expectedDto = new WatchPartyDto(partyId, joinCode, "host", "popular", true, DateTime.UtcNow, 2);
+            var expectedDto = new WatchPartyDto(partyId, joinCode, "host", "popular", true, false, DateTime.UtcNow, 2);
 
             _currentUserServiceMock.UserId.Returns(userId);
             _watchPartyRepositoryMock.GetByJoinCodeAsync(joinCode, Arg.Any<CancellationToken>()).Returns(party);
