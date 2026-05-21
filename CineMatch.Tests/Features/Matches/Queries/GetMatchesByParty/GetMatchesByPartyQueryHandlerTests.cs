@@ -46,7 +46,7 @@ public class GetMatchesByPartyQueryHandlerTests
             .Returns(call =>
             {
                 var m = call.Arg<Match>();
-                return new MatchDto(m.Id, m.WatchPartyId, m.MovieId, m.MatchedAt, m.IsWatched, null, null);
+                return new MatchDto(m.Id, m.WatchPartyId, m.MovieId, null, null, null, null, m.MatchedAt, m.IsWatched, null, null);
             });
 
         _handler = new GetMatchesByPartyQueryHandler(

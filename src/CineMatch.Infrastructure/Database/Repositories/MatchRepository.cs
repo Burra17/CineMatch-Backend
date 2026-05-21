@@ -13,9 +13,17 @@ public class MatchRepository : GenericRepository<Match>, IMatchRepository
     public async Task<IReadOnlyList<Match>> GetByPartyAsync(Guid watchPartyId, CancellationToken cancellationToken)
     {
         return await _context.Matches
+            .Include(m => m.Movie)
             .Where(m => m.WatchPartyId == watchPartyId)
             .OrderByDescending(m => m.MatchedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Match?> GetByIdWithMovieAsync(Guid matchId, CancellationToken cancellationToken)
+    {
+        return await _context.Matches
+            .Include(m => m.Movie)
+            .FirstOrDefaultAsync(m => m.Id == matchId, cancellationToken);
     }
 
     public async Task<bool> ExistsForMovieInPartyAsync(Guid watchPartyId, Guid movieId, CancellationToken cancellationToken)
