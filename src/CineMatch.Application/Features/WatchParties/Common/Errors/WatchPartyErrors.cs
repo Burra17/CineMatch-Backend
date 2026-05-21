@@ -20,6 +20,10 @@ public static class WatchPartyErrors
         code: "WatchParty.HostCannotLeave",
         description: "The host is not allowed to leave the party.");
 
+    public static readonly Error NotHost = Error.Forbidden(
+        code: "WatchParty.NotHost",
+        description: "Only the host can perform this action.");
+
     public static readonly Error Unauthorized = Error.Unauthorized(
         code: "WatchParty.Unauthorized",
         description: "The user is unauthorized.");

@@ -6,6 +6,7 @@ public record WatchPartyDetailsDto(
     string HostUsername,
     string Genre,
     bool IsActive,
+    bool IsStarted,
     DateTime CreatedAt,
     int MemberCount,
     IReadOnlyList<PartyMemberDto> Members
