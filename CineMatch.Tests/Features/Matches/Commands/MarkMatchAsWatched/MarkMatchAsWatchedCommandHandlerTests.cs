@@ -49,7 +49,7 @@ public class MarkMatchAsWatchedCommandHandlerTests
         _mapperMock = Substitute.For<IMapper>();
 
         _currentUserServiceMock.UserId.Returns(UserId);
-        _matchRepositoryMock.GetByIdAsync(MatchId).Returns(UnwatchedMatch);
+        _matchRepositoryMock.GetByIdWithMovieAsync(MatchId, Arg.Any<CancellationToken>()).Returns(UnwatchedMatch);
         _partyMemberRepositoryMock
             .GetMembershipAsync(UserId, PartyId, Arg.Any<CancellationToken>())
             .Returns(ActiveMember);
@@ -58,7 +58,7 @@ public class MarkMatchAsWatchedCommandHandlerTests
             .Returns(call =>
             {
                 var m = call.Arg<Match>();
-                return new MatchDto(m.Id, m.WatchPartyId, m.MovieId, m.MatchedAt, m.IsWatched, m.WatchedByUserId, m.WatchedAt);
+                return new MatchDto(m.Id, m.WatchPartyId, m.MovieId, null, null, null, null, m.MatchedAt, m.IsWatched, m.WatchedByUserId, m.WatchedAt);
             });
 
         _handler = new MarkMatchAsWatchedCommandHandler(
@@ -105,7 +105,7 @@ public class MarkMatchAsWatchedCommandHandlerTests
     public async Task Handle_MatchNotFound_ReturnsNotFound()
     {
         // Arrange
-        _matchRepositoryMock.GetByIdAsync(MatchId).Returns((Match?)null);
+        _matchRepositoryMock.GetByIdWithMovieAsync(MatchId, Arg.Any<CancellationToken>()).Returns((Match?)null);
 
         // Act
         var result = await _handler.Handle(new MarkMatchAsWatchedCommand(MatchId), CancellationToken.None);
@@ -121,7 +121,7 @@ public class MarkMatchAsWatchedCommandHandlerTests
     {
         // Arrange
         var watchedMatch = new Match { Id = MatchId, WatchPartyId = PartyId, IsWatched = true };
-        _matchRepositoryMock.GetByIdAsync(MatchId).Returns(watchedMatch);
+        _matchRepositoryMock.GetByIdWithMovieAsync(MatchId, Arg.Any<CancellationToken>()).Returns(watchedMatch);
 
         // Act
         var result = await _handler.Handle(new MarkMatchAsWatchedCommand(MatchId), CancellationToken.None);
