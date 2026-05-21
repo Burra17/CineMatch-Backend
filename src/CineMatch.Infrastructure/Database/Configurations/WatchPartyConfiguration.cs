@@ -23,8 +23,15 @@ internal class WatchPartyConfiguration : IEntityTypeConfiguration<WatchParty>
         builder.Property(wp => wp.IsActive)
             .IsRequired();
 
+        builder.Property(wp => wp.IsStarted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(wp => wp.CreatedAt)
             .IsRequired();
+
+        builder.Property(wp => wp.StartedAt)
+            .IsRequired(false);
 
         builder.Property(wp => wp.ClosedAt)
             .IsRequired(false);

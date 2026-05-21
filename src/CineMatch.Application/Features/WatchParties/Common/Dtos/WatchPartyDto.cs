@@ -6,6 +6,7 @@ public record WatchPartyDto(
     string HostUsername,
     string Genre,
     bool IsActive,
+    bool IsStarted,
     DateTime CreatedAt,
     int MemberCount
 );
