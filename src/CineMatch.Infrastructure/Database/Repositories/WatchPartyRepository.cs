@@ -30,4 +30,13 @@ public class WatchPartyRepository : GenericRepository<WatchParty>, IWatchPartyRe
         return !await _context.WatchParties
             .AnyAsync(wp => wp.JoinCode == joinCode && wp.IsActive, cancellationToken);
     }
+
+    public async Task<List<WatchParty>> GetAllWithHostAndMembersAsync(CancellationToken cancellationToken)
+    {
+        return await _context.WatchParties
+            .Include(wp => wp.Host)
+            .Include(wp => wp.PartyMembers)
+            .OrderByDescending(wp => wp.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
 }
