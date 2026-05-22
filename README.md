@@ -56,6 +56,16 @@ dotnet user-secrets set "JwtSettings:Secret" "<minst-32-tecken-lång-hemlighet>"
 dotnet user-secrets set "Tmdb:ApiKey" "<din-tmdb-api-nyckel>"
 ```
 
+Vill du att en admin-användare skapas automatiskt vid uppstart sätter du även:
+
+```bash
+dotnet user-secrets set "AdminSeed:Email" "admin@cinematch.com"
+dotnet user-secrets set "AdminSeed:Username" "admin"
+dotnet user-secrets set "AdminSeed:Password" "<ett-säkert-lösenord>"
+```
+
+Om dessa är tomma (standardvärdet i `appsettings.json`) hoppar applikationen över seeding utan fel. Admin skapas bara om ingen användare med rollen `Admin` redan finns — körning flera gånger skapar inga dubbletter.
+
 ### 4. Kör migrationer
 
 ```bash

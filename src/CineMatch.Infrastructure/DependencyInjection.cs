@@ -38,6 +38,9 @@ public static class DependencyInjection
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IJoinCodeGenerator, JoinCodeGenerator>();
 
+        services.Configure<AdminSeedSettings>(configuration.GetSection(AdminSeedSettings.SectionName));
+        services.AddScoped<ApplicationDbInitializer>();
+
         AddTmdbHttpClient(services, configuration);
         AddJwtAuthentication(services, configuration);
 
