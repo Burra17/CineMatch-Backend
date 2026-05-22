@@ -25,4 +25,9 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         return await _context.Users.AnyAsync(u => u.Username == username, cancellationToken);
     }
+
+    public async Task<int> CountAsync(CancellationToken cancellationToken)
+    {
+        return await _context.Users.CountAsync(cancellationToken);
+    }
 }
